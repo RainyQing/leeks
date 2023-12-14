@@ -9,7 +9,8 @@
     韭菜专用摸鱼插件!<br>
     韭菜专用摸鱼插件!<br>
         good luck!<br>
-        使用说明：https://github.com/huage2580/leeks
+        使用说明：https://github.com/huage2580/leeks <br>
+        适配IDEA 2023.3: https://github.com/WoChen5770/leeks <br>
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
@@ -19,7 +20,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
         <toolWindow anchor="left" id="leeks" factoryClass="FundWindow"/>
-        <applicationConfigurable id="leeks_settings" instance="SettingsWindow"/>
+        <applicationConfigurable id="leeks_settings" instance="SettingsWindow" displayName="Leeks"/>
         <notificationGroup id="Leeks Notification Group" displayType="BALLOON"/>
     </extensions>
 

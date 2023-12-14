@@ -2,7 +2,7 @@ package handler;
 
 import bean.FundBean;
 import com.google.gson.Gson;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import utils.HttpClientPool;
 import utils.LogUtil;
 

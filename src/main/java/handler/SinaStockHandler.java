@@ -3,7 +3,7 @@ package handler;
 import bean.StockBean;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import utils.HttpClientPool;
 import utils.LogUtil;
 
