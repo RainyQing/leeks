@@ -17,12 +17,15 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.table.JBTable;
 import handler.TianTianFundHandler;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import quartz.HandlerJob;
 import quartz.QuartzManager;
-import utils.*;
+import utils.HttpClientPool;
+import utils.LogUtil;
+import utils.PopupsUiUtil;
+import utils.WindowUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -31,8 +34,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.net.MalformedURLException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Objects;
 
 public class FundWindow implements ToolWindowFactory {
     public static final String NAME = "Fund";
@@ -48,7 +52,7 @@ public class FundWindow implements ToolWindowFactory {
         //先加载代理
         loadProxySetting();
 
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        ContentFactory contentFactory = ContentFactory.getInstance();
         Content content = contentFactory.createContent(mPanel, NAME, false);
         //股票
         Content content_stock = contentFactory.createContent(stockWindow.getmPanel(), StockWindow.NAME, false);

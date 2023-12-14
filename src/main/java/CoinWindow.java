@@ -8,7 +8,7 @@ import com.intellij.ui.table.JBTable;
 import handler.CoinRefreshHandler;
 import handler.YahooCoinHandler;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import quartz.HandlerJob;
 import quartz.QuartzManager;
@@ -19,7 +19,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.util.*;
+import java.util.HashMap;
 import java.util.List;
 
 public class CoinWindow {

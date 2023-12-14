@@ -1,7 +1,7 @@
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 import quartz.QuartzManager;
@@ -38,7 +38,7 @@ public class SettingsWindow  implements Configurable {
     private JButton proxyTestButton;
 
     @Override
-    public @Nls(capitalization = Nls.Capitalization.Title) String getDisplayName() {
+    public @Nls String getDisplayName() {
         return "Leeks";
     }
 
