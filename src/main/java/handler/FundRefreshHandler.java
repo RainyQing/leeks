@@ -148,11 +148,13 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
 
         int columnIndex3 = WindowUtils.getColumnIndexByName(columnNames, "收益率");
         int columnIndex4 = WindowUtils.getColumnIndexByName(columnNames, "收益");
+        int columnIndex5 = WindowUtils.getColumnIndexByName(columnNames, "今日收益");
 
         table.getColumn(getColumnName(columnIndex)).setCellRenderer(cellRenderer);
 
         table.getColumn(getColumnName(columnIndex3)).setCellRenderer(cellRenderer);
         table.getColumn(getColumnName(columnIndex4)).setCellRenderer(cellRenderer);
+        table.getColumn(getColumnName(columnIndex5)).setCellRenderer(cellRenderer);
     }
 
     protected void updateData(FundBean bean) {
