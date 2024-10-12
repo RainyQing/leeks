@@ -147,7 +147,12 @@ public class SettingsWindow  implements Configurable {
         }
         for (String code : codes) {
             if (!code.isEmpty()) {
-                set.add(code.trim());
+                if ("key_stocks".equals(key)) {
+                    String targetCode = StockUtils.autoCompleteCode(code);
+                    set.add(targetCode);
+                } else {
+                    set.add(code);
+                }
             }
         }
         return new ArrayList<>(set);
