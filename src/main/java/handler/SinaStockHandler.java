@@ -108,6 +108,10 @@ public class SinaStockHandler extends StockRefreshHandler {
                     BigDecimal incomeDec = incomeDiff.multiply(bondDec)
                             .setScale(2, RoundingMode.HALF_UP);
                     bean.setIncome(incomeDec.toString());
+                    // 计算当日收益=(当前价-成本价)*持仓
+                    BigDecimal nowDec = new BigDecimal(bean.getNow());
+                    BigDecimal costPrise = new BigDecimal(bean.getCostPrise());
+                    bean.setTodayIncome(nowDec.subtract(costPrise).multiply(bondDec).toString());
                 }
             }
 
