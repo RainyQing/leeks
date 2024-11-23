@@ -103,18 +103,15 @@ bug fix from [DAIE](https://github.com/DA1Y1)
 支持自定义更新的时间段 from [dengerYang](https://github.com/dengerYang)  
 - v2.1.0  
   兼容成本为负的情况 from [bu6030](https://github.com/bu6030)
-- 2.2.0
+- v2.2.0
   适配IDEA 2023.3 from [WoChen5770](https://github.com/WoChen5770)
-- 2.3.0
+- v2.3.0
   修复腾讯接口港股实时数据。（此前是延时15分钟）
   更新新浪接口支持港美股。  from [WoChen5770](https://github.com/WoChen5770)
-- 2.4.0
+- v2.4.0
   适配IDEA 2024.1  from [WoChen5770](https://github.com/WoChen5770)
-- 2.5.0
-  区分基金和股票得代码  from [kibozh](https://github.com/kibozh)
-- 2.6.0
-  新增今日收益率  from [Heng Chen](https://github.com/RoaringFlame)
-
+- v2.5.0
+  适配IDEA 2024.3  from [RainyQing](https://github.com/RainyQing)
 
 
 
