@@ -3,8 +3,6 @@ package bean;
 import org.apache.commons.lang3.StringUtils;
 import utils.PinYinUtils;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 
@@ -25,9 +23,10 @@ public class StockBean {
     private String min;
 
     private String costPrise;//成本价
-//    private String cost;//成本
+    //    private String cost;//成本
     private String bonds;//持仓
     private String incomePercent;//收益率
+    private String todayIncome;//今日收益
     private String income;//收益
 
     public StockBean() {
@@ -54,9 +53,9 @@ public class StockBean {
         this.name = "--";
     }
 
-    public StockBean(String code, Map<String, String[]> codeMap){
+    public StockBean(String code, Map<String, String[]> codeMap) {
         this.code = code;
-        if(codeMap.containsKey(code)){
+        if (codeMap.containsKey(code)) {
             String[] codeStr = codeMap.get(code);
             if (codeStr.length > 2) {
                 this.code = codeStr[0];
@@ -147,6 +146,15 @@ public class StockBean {
         this.bonds = bonds;
     }
 
+    public String getTodayIncome() {
+        return todayIncome;
+    }
+
+    public void setTodayIncome(String todayIncome) {
+        this.todayIncome = todayIncome;
+    }
+
+
     //    public String getCost() {
 //        return cost;
 //    }
@@ -224,6 +232,12 @@ public class StockBean {
                 return this.getCostPrise() != null ? this.getIncomePercent() + "%" : this.getIncomePercent();
             case "收益":
                 return this.getIncome();
+            case "今日收益":
+                String todayIncome = "--";
+                if (this.getChange() != null) {
+                    todayIncome = this.getTodayIncome().startsWith("-") ? this.getTodayIncome() : "+" + this.getTodayIncome();
+                }
+                return todayIncome;
             case "更新时间":
                 String timeStr = "--";
                 if (this.getTime() != null) {
