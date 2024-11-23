@@ -37,7 +37,12 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
         String[] configStr = tableHeader.split(",");
         columnNames = new String[configStr.length];
         for (int i = 0; i < configStr.length; i++) {
-            columnNames[i] = WindowUtils.remapPinYin(configStr[i]);
+            try {
+                columnNames[i] = WindowUtils.remapPinYin(configStr[i]);
+            } catch (Exception e) {
+                // 容错处理
+                columnNames[i] = configStr[i];
+            }
         }
     }
 
@@ -56,7 +61,12 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
         FontMetrics metrics = table.getFontMetrics(table.getFont());
         table.setRowHeight(Math.max(table.getRowHeight(), metrics.getHeight()));
         table.setModel(this);
-        refreshColorful(!colorful);
+        try {
+            refreshColorful(!colorful);
+        } catch (Exception e) {
+            // 容错处理
+            System.err.println("Failed to refresh colorful: " + e.getMessage());
+        }
     }
 
     public void refreshColorful(boolean colorful) {
@@ -143,18 +153,27 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
         };
-//        table.getColumn(getColumnName(2)).setCellRenderer(cellRenderer);
-        int columnIndex = WindowUtils.getColumnIndexByName(columnNames, "估算涨跌");
 
+        int columnIndex = WindowUtils.getColumnIndexByName(columnNames, "估算涨跌");
         int columnIndex3 = WindowUtils.getColumnIndexByName(columnNames, "收益率");
         int columnIndex4 = WindowUtils.getColumnIndexByName(columnNames, "收益");
         int columnIndex5 = WindowUtils.getColumnIndexByName(columnNames, "今日收益");
 
-        table.getColumn(getColumnName(columnIndex)).setCellRenderer(cellRenderer);
+        if (columnIndex >= 0) {
+            table.getColumn(getColumnName(columnIndex)).setCellRenderer(cellRenderer);
+        }
 
-        table.getColumn(getColumnName(columnIndex3)).setCellRenderer(cellRenderer);
-        table.getColumn(getColumnName(columnIndex4)).setCellRenderer(cellRenderer);
-        table.getColumn(getColumnName(columnIndex5)).setCellRenderer(cellRenderer);
+        if (columnIndex3 >= 0) {
+            table.getColumn(getColumnName(columnIndex3)).setCellRenderer(cellRenderer);
+        }
+
+        if (columnIndex4 >= 0) {
+            table.getColumn(getColumnName(columnIndex4)).setCellRenderer(cellRenderer);
+        }
+
+        if (columnIndex5 >= 0) {
+            table.getColumn(getColumnName(columnIndex5)).setCellRenderer(cellRenderer);
+        }
     }
 
     protected void updateData(FundBean bean) {

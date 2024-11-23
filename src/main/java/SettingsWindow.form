@@ -269,7 +269,7 @@
           <forms/>
         </constraints>
         <properties>
-          <text value="Leeks V2.2.0"/>
+          <text value="Leeks V2.5.0"/>
         </properties>
       </component>
       <grid id="b17a5" layout-manager="FlowLayout" hgap="30" vgap="5" flow-align="0">

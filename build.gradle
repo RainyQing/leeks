@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.huage2580'
-version '2.4.0'
+version '2.5.0'
 
 java {
     sourceCompatibility = '17'
@@ -14,11 +14,12 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' } // 添加 JitPack 仓库
     maven { url 'https://maven.aliyun.com/repository/public' }
     maven { url 'https://maven.aliyun.com/repository/google' }
 
     jcenter()
+    maven { url 'https://jitpack.io' } // 添加 JitPack 仓库
+
 }
 
 dependencies {
@@ -47,9 +48,15 @@ patchPluginXml {
         v1.5 增加了股票界面的排序~，可按净值和涨跌幅等列排序<br>
         v1.6 样式修改，增加精确净值（当日，上一交易日)<br>
         v1.7 设置界面样式调整，增加新浪股票接口备选<br>
-        v1.8 适配IDEA 2023.3 -- by: WoChen5770<br>
+        v1.9 适配IDEA 2023.3 -- by: WoChen5770<br>
+        v2.0 支持自定义更新的时间段 -- by: dengerYang<br>
+        v2.1 兼容成本为负的情况 -- by: bu6030<br>
+        v2.2 适配IDEA 2023.3 -- by: WoChen5770<br>
+        v2.3 修复腾讯接口港股实时数据。（此前是延时15分钟）更新新浪接口支持港美股 -- by: WoChen5770<br>
+        v2.4 适配IDEA 2024.1 -- by: WoChen5770<br>
+        v2.5 适配IDEA 2024.3 -- by: RainyQing<br>
       """)
-    sinceBuild.set('173.*')  //最低版本限制
+    sinceBuild.set('233.*')  //最低版本限制
     untilBuild.set(null) //最高版本限制 好像必须指定
 }
 
