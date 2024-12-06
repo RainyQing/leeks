@@ -16,6 +16,7 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class StockRefreshHandler extends DefaultTableModel {
     private static String[] columnNames;
@@ -30,10 +31,38 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
     static {
         PropertiesComponent instance = PropertiesComponent.getInstance();
         String tableHeaderValue = instance.getValue(WindowUtils.STOCK_TABLE_HEADER_KEY);
-        if (StringUtils.isBlank(tableHeaderValue)) {
+        if (StringUtils.isNotBlank(tableHeaderValue)) {
+            // 固定表头
+            String fixedHeaderValue = WindowUtils.STOCK_TABLE_HEADER_VALUE;
+
+            // 将表头字符串切割为列表
+            List<String> memoryHeaderList = new ArrayList<>(Arrays.asList(tableHeaderValue.split(",")));
+            List<String> fixedHeaderList = Arrays.asList(fixedHeaderValue.split(","));
+
+            // 找到固定表头中新增的内容
+            List<String> newHeaders = fixedHeaderList.stream()
+                    .filter(header -> !memoryHeaderList.contains(header))
+                    .collect(Collectors.toList());
+
+            // 找到固定表头中已经删除的内容
+            List<String> removedHeaders = memoryHeaderList.stream()
+                    .filter(header -> !fixedHeaderList.contains(header))
+                    .collect(Collectors.toList());
+
+            // 更新内存表头：添加新增字段，移除已删除字段
+            memoryHeaderList.addAll(newHeaders);
+            memoryHeaderList.removeAll(removedHeaders);
+
+            // 更新内存表头值
+            String updatedHeaderValue = String.join(",", memoryHeaderList);
+            instance.setValue(WindowUtils.STOCK_TABLE_HEADER_KEY, updatedHeaderValue);
+            tableHeaderValue = updatedHeaderValue;
+        } else {
+            // 如果内存表头为空，直接使用固定表头
             instance.setValue(WindowUtils.STOCK_TABLE_HEADER_KEY, WindowUtils.STOCK_TABLE_HEADER_VALUE);
             tableHeaderValue = WindowUtils.STOCK_TABLE_HEADER_VALUE;
         }
+
 
         String[] configStr = tableHeaderValue.split(",");
         columnNames = new String[configStr.length];

@@ -85,6 +85,9 @@ public class TencentStockHandler extends StockRefreshHandler {
             bean.setTime(values[30]);
             bean.setMax(values[33]);//33
             bean.setMin(values[34]);//34
+            bean.setBuyOne(values[10]);//34
+            bean.setSellOne(values[20]);//20
+
 
             BigDecimal now = new BigDecimal(values[3]);
             String costPriceStr = bean.getCostPrise();

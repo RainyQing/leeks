@@ -1,6 +1,7 @@
 package bean;
 
 import com.google.gson.annotations.SerializedName;
+import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import utils.PinYinUtils;
 
@@ -9,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 
+@Data
 public class FundBean {
     @SerializedName("fundcode")
     private String fundCode;
@@ -23,7 +25,6 @@ public class FundBean {
     private String costPrise;//持仓成本价
     private String bonds;//持有份额
     private String incomePercent;//收益率
-    private String todayIncome;//今日收益
     private String income;//收益
 
     public FundBean() {
@@ -56,116 +57,6 @@ public class FundBean {
                 fund.setBonds(codeStr[2]);
             }
         }
-    }
-
-
-    public String getFundCode() {
-        return fundCode;
-    }
-
-    public void setFundCode(String fundCode) {
-        this.fundCode = fundCode;
-    }
-
-    public String getFundName() {
-        return fundName;
-    }
-
-    public void setFundName(String fundName) {
-        this.fundName = fundName;
-    }
-
-    public String getJzrq() {
-        return jzrq;
-    }
-
-    public void setJzrq(String jzrq) {
-        this.jzrq = jzrq;
-    }
-
-    public String getDwjz() {
-        return dwjz;
-    }
-
-    public void setDwjz(String dwjz) {
-        this.dwjz = dwjz;
-    }
-
-    public String getGsz() {
-        return gsz;
-    }
-
-    public void setGsz(String gsz) {
-        this.gsz = gsz;
-    }
-
-    public String getGszzl() {
-        return gszzl;
-    }
-
-    public void setGszzl(String gszzl) {
-        this.gszzl = gszzl;
-    }
-
-    public String getGztime() {
-        return gztime;
-    }
-
-    public void setGztime(String gztime) {
-        this.gztime = gztime;
-    }
-
-    public String getCostPrise() {
-        return costPrise;
-    }
-
-    public void setCostPrise(String costPrise) {
-        this.costPrise = costPrise;
-    }
-
-    public String getBonds() {
-        return bonds;
-    }
-
-    public void setBonds(String bonds) {
-        this.bonds = bonds;
-    }
-
-    public String getIncomePercent() {
-        return incomePercent;
-    }
-
-    public String getTodayIncome() {
-        return todayIncome;
-    }
-
-    public void setTodayIncome(String todayIncome) {
-        this.todayIncome = todayIncome;
-    }
-
-    public void setIncomePercent(String incomePercent) {
-        this.incomePercent = incomePercent;
-    }
-
-    public String getIncome() {
-        return income;
-    }
-
-    public void setIncome(String income) {
-        this.income = income;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FundBean fundBean = (FundBean) o;
-        return Objects.equals(fundCode, fundBean.fundCode);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(fundCode);
     }
 
     /**
@@ -208,8 +99,6 @@ public class FundBean {
                 return this.getBonds();
             case "收益率":
                 return this.getCostPrise() != null ? this.getIncomePercent() + "%" : this.getIncomePercent();
-            case "今日收益":
-                return this.getTodayIncome();
             case "收益":
                 return this.getIncome();
             default:

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.huage2580'
-version '2.5.0'
+version '2.6.0'
 
 java {
     sourceCompatibility = '17'
@@ -30,6 +30,8 @@ dependencies {
         exclude group: 'org.slf4j' // 与idea自带的冲突
         exclude group: 'com.mchange'
     }
+    compileOnly(group: 'org.projectlombok', name: 'lombok', version: '1.18.26')
+    annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: '1.18.26')
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -55,6 +57,7 @@ patchPluginXml {
         v2.3 修复腾讯接口港股实时数据。（此前是延时15分钟）更新新浪接口支持港美股 -- by: WoChen5770<br>
         v2.4 适配IDEA 2024.1 -- by: WoChen5770<br>
         v2.5 适配IDEA 2024.3 -- by: RainyQing<br>
+        v2.6 优化代码 , 使用@data注解替换所有getter/setter方法  2. 新增卖一/买一手数表头显示  3. 优化程序开始初始化表头逻辑 , 新增如果添加/删除固定表头同时修改当前表头 -- by: RainyQing<br>
       """)
     sinceBuild.set('233.*')  //最低版本限制
     untilBuild.set(null) //最高版本限制 好像必须指定

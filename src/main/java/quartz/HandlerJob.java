@@ -46,11 +46,11 @@ public class HandlerJob implements Job {
             } else if (handler instanceof CoinRefreshHandler) {
                 ((CoinRefreshHandler) handler).handle(codes);
             }
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            LogUtil.info(String.format("%s 运行 %s ;下一次运行时间为 %s",
-                    simpleDateFormat.format(new Date()),
-                    handler == null ? "null" : handler.getClass().getSimpleName(),
-                    simpleDateFormat.format(context.getNextFireTime())));
+//            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//            LogUtil.info(String.format("%s 运行 %s ;下一次运行时间为 %s",
+//                    simpleDateFormat.format(new Date()),
+//                    handler == null ? "null" : handler.getClass().getSimpleName(),
+//                    simpleDateFormat.format(context.getNextFireTime())));
         } catch (Exception e) {
             LogUtil.info("刷新出现异常：" + ExceptionUtil.getMessage(e) + "\r\n" + ExceptionUtil.currentStackTrace());
             throw new JobExecutionException(e);

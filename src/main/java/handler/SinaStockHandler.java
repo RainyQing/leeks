@@ -91,6 +91,8 @@ public class SinaStockHandler extends StockRefreshHandler {
             bean.setTime(Strings.repeat("0", 8) + split[31]);
             bean.setMax(split[4]);
             bean.setMin(split[5]);
+            bean.setBuyOne(split[10]);
+            bean.setSellOne(split[20]);
 
             String costPriceStr = bean.getCostPrise();
             if (StringUtils.isNotEmpty(costPriceStr)) {
