@@ -112,6 +112,9 @@ bug fix from [DAIE](https://github.com/DA1Y1)
   适配IDEA 2024.1  from [WoChen5770](https://github.com/WoChen5770)
 - v2.5.0
   适配IDEA 2024.3  from [RainyQing](https://github.com/RainyQing)
+- v2.6 
+- 优化代码 , 使用@data注解替换所有getter/setter方法  2. 新增卖一/买一手数表头显示  3. 优化程序开始初始化表头逻辑 , 新增如果添加/删除固定表头同时修改当前表头 from [RainyQing](https://github.com/RainyQing)
+
 
 
 
