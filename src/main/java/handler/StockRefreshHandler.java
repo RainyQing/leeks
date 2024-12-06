@@ -173,12 +173,14 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
 
         int columnIndex3 = WindowUtils.getColumnIndexByName(columnNames, "收益率");
         int columnIndex4 = WindowUtils.getColumnIndexByName(columnNames, "收益");
+        int columnIndex5 = WindowUtils.getColumnIndexByName(columnNames, "今日收益");
 
         table.getColumn(getColumnName(columnIndex1)).setCellRenderer(cellRenderer);
         table.getColumn(getColumnName(columnIndex2)).setCellRenderer(cellRenderer);
 
         table.getColumn(getColumnName(columnIndex3)).setCellRenderer(cellRenderer);
         table.getColumn(getColumnName(columnIndex4)).setCellRenderer(cellRenderer);
+//        table.getColumn(getColumnName(columnIndex5)).setCellRenderer(cellRenderer);
     }
 
     protected void updateData(StockBean bean) {
