@@ -256,4 +256,23 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
     public boolean isCellEditable(int row, int column) {
         return false;
     }
+
+    public List<String> search(String query) {
+        List<String> results = new ArrayList<>();
+        if (!query.isEmpty()) {
+            results.add("创-300628-亿联网络");
+            results.add("创-300638-南新制药");
+            results.add("创-300658-光启技术");
+            results.add("创-300628-亿联网络");
+            results.add("创-300638-南新制药");
+            results.add("创-300658-光启技术");
+            results.add("创-300628-亿联网络");
+            results.add("创-300638-南新制药");
+            results.add("创-300658-光启技术");
+            results.add("创-300628-亿联网络");
+            results.add("创-300638-南新制药");
+            results.add("创-300658-光启技术");
+        }
+        return results;
+    }
 }
