@@ -1,6 +1,9 @@
 package handler;
 
 import bean.StockBean;
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.table.JBTable;
@@ -27,6 +30,9 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
 
     private JTable table;
     private boolean colorful = true;
+
+    String url = "https://proxy.finance.qq.com/cgi/cgi-bin/smartbox/search?stockFlag=1&fundFlag=1&app=official_website&c=1&query=";
+
 
     static {
         PropertiesComponent instance = PropertiesComponent.getInstance();
@@ -257,21 +263,31 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
         return false;
     }
 
+
     public List<String> search(String query) {
         List<String> results = new ArrayList<>();
-        if (!query.isEmpty()) {
-            results.add("创-300628-亿联网络");
-            results.add("创-300638-南新制药");
-            results.add("创-300658-光启技术");
-            results.add("创-300628-亿联网络");
-            results.add("创-300638-南新制药");
-            results.add("创-300658-光启技术");
-            results.add("创-300628-亿联网络");
-            results.add("创-300638-南新制药");
-            results.add("创-300658-光启技术");
-            results.add("创-300628-亿联网络");
-            results.add("创-300638-南新制药");
-            results.add("创-300658-光启技术");
+        String text = HttpUtil.get(url + query);
+        com.alibaba.fastjson2.JSONObject jsonObject = com.alibaba.fastjson2.JSONObject.parseObject(text);
+        // 处理 "stock" 节点
+        if (jsonObject.containsKey("stock")) {
+            JSONArray stockArray = jsonObject.getJSONArray("stock");
+            for (int i = 0; i < stockArray.size(); i++) {
+                JSONObject stockItem = stockArray.getJSONObject(i);
+                String code = stockItem.getString("code");
+                String name = stockItem.getString("name");
+                results.add("股票-" + code + "-" + name);
+            }
+        }
+
+        // 处理 "fund" 节点
+        if (jsonObject.containsKey("fund")) {
+            JSONArray fundArray = jsonObject.getJSONArray("fund");
+            for (int i = 0; i < fundArray.size(); i++) {
+                JSONObject fundItem = fundArray.getJSONObject(i);
+                String code = fundItem.getString("code");
+                String name = fundItem.getString("name");
+                results.add("基金-" + code + "-" + name);
+            }
         }
         return results;
     }
