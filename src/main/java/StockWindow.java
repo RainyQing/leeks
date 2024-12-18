@@ -6,9 +6,13 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupStep;
 import com.intellij.openapi.ui.popup.util.BaseListPopupStep;
 import com.intellij.ui.AnActionButton;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.awt.RelativePoint;
+import com.intellij.ui.components.JBList;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
+import com.intellij.util.ui.UIUtil;
 import handler.SinaStockHandler;
 import handler.StockRefreshHandler;
 import handler.TencentStockHandler;
@@ -25,9 +29,7 @@ import utils.WindowUtils;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +42,14 @@ public class StockWindow {
 
     static JBTable table;
     static JLabel refreshTimeLabel;
+
+
+    private JDialog searchDialog; // 搜索弹窗
+    private JTextField searchField; // 搜索输入框
+    private JList<String> resultList; // 搜索结果列表
+    private DefaultListModel<String> listModel; // 列表模型
+    private Point initialClick; // 记录初始点击位置
+
 
     public JPanel getmPanel() {
         return mPanel;
@@ -106,10 +116,13 @@ public class StockWindow {
         });
     }
 
-    public StockWindow() {
 
-        //切换接口
+    public StockWindow() {
+        // 切换接口
         handler = factoryHandler();
+
+        // 初始化搜索弹窗
+        initSearchDialog();
 
         AnActionButton refreshAction = new AnActionButton("停止刷新当前表格数据", AllIcons.Actions.Pause) {
             @Override
@@ -118,6 +131,7 @@ public class StockWindow {
                 this.setEnabled(false);
             }
         };
+
         ToolbarDecorator toolbarDecorator = ToolbarDecorator.createDecorator(table)
                 .addExtraAction(new AnActionButton("持续刷新当前表格数据", AllIcons.Actions.Refresh) {
                     @Override
@@ -128,26 +142,209 @@ public class StockWindow {
                 })
                 .addExtraAction(refreshAction)
                 .setToolbarPosition(ActionToolbarPosition.TOP);
+
         JPanel toolPanel = toolbarDecorator.createPanel();
         toolbarDecorator.getActionsPanel().add(refreshTimeLabel, BorderLayout.EAST);
-        toolPanel.setBorder(new EmptyBorder(0,0,0,0));
+        toolPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
         mPanel.add(toolPanel, BorderLayout.CENTER);
+
         // 非主要tab，需要创建，创建时立即应用数据
         apply();
+
+        // 绑定全局快捷键 F7
+        bindGlobalKeyListener();
     }
 
-    private static StockRefreshHandler factoryHandler(){
+    // 初始化搜索弹窗
+    private void initSearchDialog() {
+
+        // 获取屏幕的宽度和高度
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        // 创建搜索弹窗
+        searchDialog = new JDialog((JFrame) null, false);
+        searchDialog.setUndecorated(true); // 无标题栏
+        searchDialog.setSize(400, 50);    // 设置大小
+        searchDialog.setLayout(new BorderLayout());
+        searchDialog.setLocationRelativeTo(null); // 居中显示
+        searchDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE); // 默认隐藏
+        // 设置透明度
+//        searchDialog.setOpacity(0.85f);  // 设置透明度，范围从0.0 (完全透明) 到 1.0 (完全不透明)
+
+        // 背景面板
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(new Color(0, 0, 0, 0)); // 确保背景是透明的
+        searchDialog.add(contentPanel, BorderLayout.CENTER);  // 添加自定义面板到弹窗
+
+        // 搜索输入框
+        searchField = new JTextField(50);
+        Font labelFont = UIUtil.getLabelFont();
+        searchField.setFont(labelFont);
+        searchField.setBackground(JBColor.background()); // 搜索框背景颜色跟随系统主题
+        searchField.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        searchField.setPreferredSize(new Dimension(0, 50)); // 控制高度
+
+        // 添加鼠标事件监听器以实现拖动功能
+        searchField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                initialClick = e.getPoint(); // 记录初始点击位置
+            }
+        });
+
+        searchField.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (initialClick != null) {
+                    // 获取当前窗口位置
+                    int thisX = searchDialog.getLocation().x;
+                    int thisY = searchDialog.getLocation().y;
+
+                    // 计算拖动后的偏移量
+                    int xMoved = e.getX() - initialClick.x;
+                    int yMoved = e.getY() - initialClick.y;
+
+                    // 设置新的窗口位置
+                    searchDialog.setLocation(thisX + xMoved, thisY + yMoved);
+                }
+            }
+        });
+
+
+        int x = (screenSize.width - searchDialog.getWidth()) / 2;
+        int y = (int) (screenSize.height * 0.3); // 距离顶部30%
+        searchDialog.setLocation(x, y);
+        contentPanel.add(searchField, BorderLayout.NORTH);
+
+
+        // 搜索结果列表
+        listModel = new DefaultListModel<>();
+        resultList = new JBList<>(listModel);
+        resultList.setFont(labelFont);
+        resultList.setBackground(JBColor.background()); // 列表背景颜色
+        resultList.setForeground(JBColor.foreground()); // 列表字体颜色
+        resultList.setSelectionBackground(UIUtil.getListSelectionBackground(true)); // 选中背景
+        resultList.setSelectionForeground(UIUtil.getListSelectionForeground(true)); // 选中字体颜色
+        resultList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                label.setForeground(JBColor.foreground()); // 强制字体颜色
+                label.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 20)); // 设置内边距
+                return label;
+            }
+        });
+//        resultList.setVisibleRowCount(20); // 默认最多显示20行
+
+        // 滚动面板包装结果列表
+        JScrollPane scrollPane = new JBScrollPane(resultList);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setVisible(false);// 初始时隐藏列表
+
+        // 搜索框键盘事件监听
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String query = searchField.getText().trim();
+                listModel.clear();
+                if (!query.isEmpty()) {
+                    List<String> results = handler.search(query);
+                    if (!results.isEmpty()) {
+                        updateSearchResults(results);
+                        if (!scrollPane.isVisible()) {
+                            contentPanel.add(scrollPane, BorderLayout.CENTER); // 动态添加滚动面板
+                            scrollPane.setVisible(true);
+                            searchDialog.setSize(400, 400); // 动态调整窗口大小
+                            searchDialog.revalidate(); // 刷新布局
+                        }
+                    } else if (scrollPane.isVisible()) {
+                        contentPanel.remove(scrollPane); // 动态移除滚动面板
+                        scrollPane.setVisible(false);
+                        searchDialog.setSize(400, 50); // 恢复窗口为仅显示输入框的大小
+                        searchDialog.revalidate(); // 刷新布局
+                    }
+                } else {
+                    if (scrollPane.isVisible()) {
+                        contentPanel.remove(scrollPane);
+                        scrollPane.setVisible(false);
+                        searchDialog.setSize(400, 50);
+                        searchDialog.revalidate();
+                    }
+                }
+
+                // 支持上下键导航
+                if (e.getKeyCode() == KeyEvent.VK_DOWN && !listModel.isEmpty()) {
+                    resultList.requestFocus();
+                    resultList.setSelectedIndex(0);
+                }
+            }
+        });
+
+        // 结果列表键盘事件监听
+        resultList.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER && resultList.getSelectedValue() != null) {
+                    JOptionPane.showMessageDialog(searchDialog, "选择了：" + resultList.getSelectedValue());
+                    searchDialog.setVisible(false);
+                }
+            }
+        });
+
+        // 监听焦点丢失，关闭弹窗
+        searchDialog.addWindowFocusListener(new WindowFocusListener() {
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                // 窗口获得焦点时不做操作
+            }
+
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                searchDialog.setVisible(false); // 窗口失去焦点时关闭
+            }
+        });
+
+
+    }
+
+
+    // 更新搜索结果
+    private void updateSearchResults(List<String> results) {
+        listModel.clear();
+        for (String result : results) {
+            listModel.addElement(result);
+        }
+    }
+
+    // 全局快捷键监听
+    private void bindGlobalKeyListener() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
+            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_F7) {
+                if (!searchDialog.isVisible()) {
+                    searchField.setText(""); // 清空输入框
+                    listModel.clear(); // 清空结果
+                    searchDialog.setVisible(true); // 显示弹窗
+                    searchField.requestFocus(); // 聚焦到输入框
+                }
+                return true; // 消费事件
+            }
+            return false;
+        });
+    }
+
+
+    private static StockRefreshHandler factoryHandler() {
         boolean useSinaApi = PropertiesComponent.getInstance().getBoolean("key_stocks_sina");
-        if (useSinaApi){
-            if (handler instanceof SinaStockHandler){
+        if (useSinaApi) {
+            if (handler instanceof SinaStockHandler) {
                 return handler;
             }
             return new SinaStockHandler(table, refreshTimeLabel);
         }
-        if (handler instanceof TencentStockHandler){
+        if (handler instanceof TencentStockHandler) {
             return handler;
         }
-        return  new TencentStockHandler(table, refreshTimeLabel);
+        return new TencentStockHandler(table, refreshTimeLabel);
     }
 
     public static void apply() {
@@ -160,6 +357,7 @@ public class StockWindow {
             refresh();
         }
     }
+
     public static void refresh() {
         if (handler != null) {
             PropertiesComponent instance = PropertiesComponent.getInstance();
@@ -189,7 +387,7 @@ public class StockWindow {
         }
     }
 
-    private static List<String> loadStocks(){
+    private static List<String> loadStocks() {
 //        return FundWindow.getConfigList("key_stocks", "[,，]");
         return SettingsWindow.getConfigList("key_stocks");
     }
