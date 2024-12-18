@@ -163,12 +163,12 @@ public class StockWindow {
         // 创建搜索弹窗
         searchDialog = new JDialog((JFrame) null, false);
         searchDialog.setUndecorated(true); // 无标题栏
-        searchDialog.setSize(400, 50);    // 设置大小
+        searchDialog.setSize(600, 50);    // 设置大小
         searchDialog.setLayout(new BorderLayout());
         searchDialog.setLocationRelativeTo(null); // 居中显示
         searchDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE); // 默认隐藏
         // 设置透明度
-//        searchDialog.setOpacity(0.85f);  // 设置透明度，范围从0.0 (完全透明) 到 1.0 (完全不透明)
+        searchDialog.setOpacity(0.85f);  // 设置透明度，范围从0.0 (完全透明) 到 1.0 (完全不透明)
 
         // 背景面板
         JPanel contentPanel = new JPanel(new BorderLayout());
@@ -215,7 +215,6 @@ public class StockWindow {
         searchDialog.setLocation(x, y);
         contentPanel.add(searchField, BorderLayout.NORTH);
 
-
         // 搜索结果列表
         listModel = new DefaultListModel<>();
         resultList = new JBList<>(listModel);
@@ -230,16 +229,21 @@ public class StockWindow {
                     JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 label.setForeground(JBColor.foreground()); // 强制字体颜色
+
+                if (value != null && value.toString().endsWith("-已添加")) {
+                    label.setForeground(JBColor.GREEN); // 已添加时字体颜色为绿色
+                }
+
                 label.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 20)); // 设置内边距
                 return label;
             }
         });
-//        resultList.setVisibleRowCount(20); // 默认最多显示20行
 
         // 滚动面板包装结果列表
         JScrollPane scrollPane = new JBScrollPane(resultList);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setVisible(false);// 初始时隐藏列表
+
 
         // 搜索框键盘事件监听
         searchField.addKeyListener(new KeyAdapter() {
@@ -254,20 +258,20 @@ public class StockWindow {
                         if (!scrollPane.isVisible()) {
                             contentPanel.add(scrollPane, BorderLayout.CENTER); // 动态添加滚动面板
                             scrollPane.setVisible(true);
-                            searchDialog.setSize(400, 400); // 动态调整窗口大小
+                            searchDialog.setSize(600, 600); // 动态调整窗口大小
                             searchDialog.revalidate(); // 刷新布局
                         }
                     } else if (scrollPane.isVisible()) {
                         contentPanel.remove(scrollPane); // 动态移除滚动面板
                         scrollPane.setVisible(false);
-                        searchDialog.setSize(400, 50); // 恢复窗口为仅显示输入框的大小
+                        searchDialog.setSize(600, 50); // 恢复窗口为仅显示输入框的大小
                         searchDialog.revalidate(); // 刷新布局
                     }
                 } else {
                     if (scrollPane.isVisible()) {
                         contentPanel.remove(scrollPane);
                         scrollPane.setVisible(false);
-                        searchDialog.setSize(400, 50);
+                        searchDialog.setSize(600, 50);
                         searchDialog.revalidate();
                     }
                 }
@@ -280,16 +284,27 @@ public class StockWindow {
             }
         });
 
+        // 鼠标选择建议
+        resultList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                //双击选中实现字体变色并添加"已添加"字样 , 最后将选中值添加到表格中
+                if (e.getClickCount() == 2 && resultList.getSelectedValue() != null) {
+                    handleSelection();
+                }
+            }
+        });
+
         // 结果列表键盘事件监听
         resultList.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER && resultList.getSelectedValue() != null) {
-                    JOptionPane.showMessageDialog(searchDialog, "选择了：" + resultList.getSelectedValue());
-                    searchDialog.setVisible(false);
+                    handleSelection();
                 }
             }
         });
+
 
         // 监听焦点丢失，关闭弹窗
         searchDialog.addWindowFocusListener(new WindowFocusListener() {
@@ -304,7 +319,69 @@ public class StockWindow {
             }
         });
 
+        // 添加 KeyListener 监听 Esc 键
+        searchDialog.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) { // 判断是否按下了 Esc 键
+                    searchDialog.setVisible(false); // 关闭窗口
+                }
+            }
+        });
 
+
+    }
+
+    //处理选中和取消选中数据追加到表格中
+    private void handleSelection() {
+        int selectedIndex = resultList.getSelectedIndex();
+        String selectedValue = listModel.getElementAt(selectedIndex).toString();
+        PropertiesComponent instance = PropertiesComponent.getInstance();
+        String key = ""; // 用于存储 PropertiesComponent 的 key
+
+        if (selectedValue.startsWith("股票")) {
+            key = "key_stocks";
+        } else if (selectedValue.startsWith("基金")) {
+            key = "key_funds";
+        } else if (selectedValue.startsWith("债券")) { // 假设你也处理债券
+            key = "key_coins";
+        }
+
+        if (selectedValue.endsWith("-已添加")) {
+            // 移除 "-已添加" 并从 PropertiesComponent 中移除数据
+            String originalValue = selectedValue.substring(0, selectedValue.length() - 4);
+            listModel.setElementAt(originalValue, selectedIndex);
+            resultList.repaint();
+
+            // 从 PropertiesComponent 中移除数据
+            String storedValue = instance.getValue(key);
+            if (storedValue != null) {
+                String[] split = originalValue.split("-");
+                if (split.length == 3) {
+                    String valueToRemove = split[1] + ";";
+                    if (storedValue.contains(valueToRemove)) {
+                        storedValue = storedValue.replace(valueToRemove, ""); // 移除匹配的字符串
+                        instance.setValue(key, storedValue);
+                    }
+                }
+            }
+        } else {
+            // 添加 "-已添加" 并将数据添加到 PropertiesComponent
+            listModel.setElementAt(selectedValue + "-已添加", selectedIndex);
+            resultList.repaint();
+
+            String[] split = selectedValue.split("-");
+            if (split.length == 3) {
+                String valueToAdd = split[1] + ";";
+                String storedValue = instance.getValue(key);
+                if (storedValue == null) {
+                    storedValue = "";
+                }
+                storedValue += valueToAdd;
+                instance.setValue(key, storedValue);
+            }
+        }
+        apply();
     }
 
 

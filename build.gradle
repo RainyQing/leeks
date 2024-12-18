@@ -30,6 +30,10 @@ dependencies {
         exclude group: 'org.slf4j' // 与idea自带的冲突
         exclude group: 'com.mchange'
     }
+    //hutool
+    implementation group: 'cn.hutool', name: 'hutool-all', version: '5.8.13'
+    //fastjson
+    implementation group: 'com.alibaba', name: 'fastjson', version: '2.0.38'
     compileOnly(group: 'org.projectlombok', name: 'lombok', version: '1.18.26')
     annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: '1.18.26')
 }
