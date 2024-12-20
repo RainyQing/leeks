@@ -49,6 +49,7 @@ public class StockWindow {
     private JList<String> resultList; // 搜索结果列表
     private DefaultListModel<String> listModel; // 列表模型
     private Point initialClick; // 记录初始点击位置
+    static PropertiesComponent instance = PropertiesComponent.getInstance();
 
 
     public JPanel getmPanel() {
@@ -73,7 +74,6 @@ public class StockWindow {
                 instance.setValue(WindowUtils.STOCK_TABLE_HEADER_KEY, tableHeadChange
                         .substring(0, tableHeadChange.length() > 0 ? tableHeadChange.length() - 1 : 0));
 
-                //LogUtil.info(instance.getValue(WindowUtils.STOCK_TABLE_HEADER_KEY));
             }
 
         });
@@ -84,13 +84,14 @@ public class StockWindow {
                     return;
                 String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(table.getSelectedRow()), handler.codeColumnIndex));//FIX 移动列导致的BUG
                 if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() > 1) {
-                    // 鼠标左键双击
-                    try {
-                        PopupsUiUtil.showImageByStockCode(code, PopupsUiUtil.StockShowType.min, new Point(e.getXOnScreen(), e.getYOnScreen()));
-                    } catch (MalformedURLException ex) {
-                        ex.printStackTrace();
-                        LogUtil.info(ex.getMessage());
-                    }
+//                    // 鼠标左键双击
+//                    int column = table.columnAtPoint(e.getPoint());
+//                    String columnName = table.getColumnName(column);
+//                    if (columnName.equals("持仓") || columnName.equals("成本价")) { // 只针对这两列
+//                        startEditing(column);
+//                    }
+
+
                 } else if (SwingUtilities.isRightMouseButton(e)) {
                     //鼠标右键
                     JBPopupFactory.getInstance().createListPopup(new BaseListPopupStep<PopupsUiUtil.StockShowType>("",
@@ -103,7 +104,25 @@ public class StockWindow {
                         @Override
                         public @Nullable PopupStep onChosen(PopupsUiUtil.StockShowType selectedValue, boolean finalChoice) {
                             try {
-                                PopupsUiUtil.showImageByStockCode(code, selectedValue, new Point(e.getXOnScreen(), e.getYOnScreen()));
+                                //如果选择删除
+                                if (selectedValue == PopupsUiUtil.StockShowType.delete) {
+                                    String key = getKeyForName(NAME);
+                                    // 从 PropertiesComponent 中移除数据
+                                    String storedValue = instance.getValue(key);
+                                    if (StringUtils.isNotBlank(storedValue)) {
+                                        String[] split = storedValue.split(";");
+                                        StringBuilder codeString = new StringBuilder();
+                                        for (String splitCode : split) {
+                                            if (!splitCode.contains(code) && !splitCode.isEmpty()) { // 关键：只添加不包含目标字符串且不为空的项
+                                                codeString.append(splitCode).append(";");
+                                            }
+                                        }
+                                        instance.setValue(key, codeString.toString());
+                                    }
+                                    apply();
+                                } else {
+                                    PopupsUiUtil.showImageByStockCode(code, selectedValue, new Point(e.getXOnScreen(), e.getYOnScreen()));
+                                }
                             } catch (MalformedURLException ex) {
                                 ex.printStackTrace();
                                 LogUtil.info(ex.getMessage());
@@ -211,7 +230,7 @@ public class StockWindow {
 
 
         int x = (screenSize.width - searchDialog.getWidth()) / 2;
-        int y = (int) (screenSize.height * 0.3); // 距离顶部30%
+        int y = (int) (screenSize.height * 0.2); // 距离顶部30%
         searchDialog.setLocation(x, y);
         contentPanel.add(searchField, BorderLayout.NORTH);
 
@@ -336,16 +355,9 @@ public class StockWindow {
     private void handleSelection() {
         int selectedIndex = resultList.getSelectedIndex();
         String selectedValue = listModel.getElementAt(selectedIndex).toString();
-        PropertiesComponent instance = PropertiesComponent.getInstance();
-        String key = ""; // 用于存储 PropertiesComponent 的 key
 
-        if (selectedValue.startsWith("股票")) {
-            key = "key_stocks";
-        } else if (selectedValue.startsWith("基金")) {
-            key = "key_funds";
-        } else if (selectedValue.startsWith("债券")) { // 假设你也处理债券
-            key = "key_coins";
-        }
+
+        String key = getKeyForResult(selectedValue);
 
         if (selectedValue.endsWith("-已添加")) {
             // 移除 "-已添加" 并从 PropertiesComponent 中移除数据
@@ -354,15 +366,18 @@ public class StockWindow {
             resultList.repaint();
 
             // 从 PropertiesComponent 中移除数据
-            String storedValue = instance.getValue(key);
-            if (storedValue != null) {
+            String instanceCode = instance.getValue(key);
+            if (instanceCode != null) {
                 String[] split = originalValue.split("-");
                 if (split.length == 3) {
-                    String valueToRemove = split[1] + ";";
-                    if (storedValue.contains(valueToRemove)) {
-                        storedValue = storedValue.replace(valueToRemove, ""); // 移除匹配的字符串
-                        instance.setValue(key, storedValue);
+                    String[] instanceSplit = instanceCode.split(";");
+                    StringBuilder codeString = new StringBuilder();
+                    for (String splitCode : instanceSplit) {
+                        if (!splitCode.contains(split[1])) { // 关键：只添加不包含目标字符串且不为空的项
+                            codeString.append(splitCode).append(";");
+                        }
                     }
+                    instance.setValue(key, codeString.toString());
                 }
             }
         } else {
@@ -384,11 +399,41 @@ public class StockWindow {
         apply();
     }
 
+    private String getKeyForResult(String result) {
+        if (result.startsWith("股票")) {
+            return "key_stocks";
+        } else if (result.startsWith("基金")) {
+            return "key_funds";
+        } else if (result.startsWith("债券")) {
+            return "key_coins";
+        }
+        return ""; // 如果前缀不匹配，则返回 null
+    }
 
-    // 更新搜索结果
+
+    private static String getKeyForName(String tableName) {
+        if (tableName.equals("Stock")) {
+            return "key_stocks";
+        } else if (tableName.startsWith("Fund")) {
+            return "key_funds";
+        } else if (tableName.startsWith("Coin")) {
+            return "key_coins";
+        }
+        return ""; // 如果前缀不匹配，则返回 null
+    }
+
+    // 更新搜索结果 , 如果是历史已添加的数据 , 后面标记为已添加
     private void updateSearchResults(List<String> results) {
         listModel.clear();
+        PropertiesComponent instance = PropertiesComponent.getInstance();
         for (String result : results) {
+            String key = getKeyForResult(result);
+            String storedValue = instance.getValue(key);
+            if (storedValue != null) {
+                if (result.split("-").length > 1 && storedValue.contains(result.split("-")[1])) {
+                    result += "-已添加"; // 如果存在，则添加后缀
+                }
+            }
             listModel.addElement(result);
         }
     }
@@ -397,9 +442,9 @@ public class StockWindow {
     private void bindGlobalKeyListener() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
             if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_F7) {
+                listModel.clear(); // 清空结果
                 if (!searchDialog.isVisible()) {
                     searchField.setText(""); // 清空输入框
-                    listModel.clear(); // 清空结果
                     searchDialog.setVisible(true); // 显示弹窗
                     searchField.requestFocus(); // 聚焦到输入框
                 }

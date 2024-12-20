@@ -28,7 +28,7 @@ public class PopupsUiUtil {
     public static void showImageByFundCode(String fundCode, FundShowType type, Point showByPoint) throws MalformedURLException {
         //------试图解决个BUG，项目销毁的问题-------
         Project project = LogUtil.getProject();
-        if (project.isDisposed()){
+        if (project.isDisposed()) {
             return;
         }
         // 图片接口
@@ -161,6 +161,10 @@ public class PopupsUiUtil {
     }
 
     public enum StockShowType {
+        /**
+         * 分时线图
+         */
+        delete("delete", "删除"),
         /**
          * 分时线图
          */
