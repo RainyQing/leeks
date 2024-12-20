@@ -5,14 +5,43 @@
 
 idea插件，查看基金，股票：支持A股，港股，美股
 
+## 申明
+### Leeks (Fork)
+本项目是 [leeks](https://github.com/huage2580/leeks) 的一个 fork，由 [huage2580](https://github.com/huage2580) 开发。原项目似乎已停止维护，因此我（[RainyQing](https://github.com/RainyQing)）创建了这个 fork 以继续维护和改进。
+
+**重要提示：原项目似乎没有提供明确的开源许可证。因此，本 fork 仅供个人学习、研究和使用，不得用于任何商业用途或进行分发。**
+
+### 维护状态
+本项目目前正积极维护中，我会定期修复 bug 并添加新功能。
+
+### 贡献
+欢迎提交 issue 和 bug 报告。目前接受针对 bug 修复和小型改进的 pull request。请确保您的 pull request 符合现有的代码风格并包含适当的测试。
+
+### 免责声明
+本项目按“原样”提供，不提供任何形式的明示或暗示的保证，包括但不限于适销性、特定用途的适用性和非侵权性保证。项目使用的所有代码以及请求接口仅用于学习、研究目的。在任何情况下，作者或版权所有者均不对因使用本项目而引起的任何索赔、损害或其他责任承担责任，无论是在合同诉讼、侵权诉讼或其他方面。
+
+
 ## 请先阅读完readme，确保编码正确输入
 
 提issues附上:使用的插件版本、IDEA详细的版本信息(到Help->about里面复制出来)，如果【Event Log】有异常信息，也请在issues附上异常
 
 ## 安装
 
-[插件下载地址](https://github.com/RainyQing/leeks/releases)  
-找到 leeks-x.x.x.zip 下载后，直接在IDEA里面安装（安装方式自行百度），注意：直接选择zip文件安装，不要解压。
+从 [插件下载地址](https://github.com/RainyQing/leeks/releases)   下载最新的 leeks-x.x.x.zip 文件。
+在 IntelliJ IDEA 中，转到 File > Settings > Plugins > Install Plugin from Disk...。
+选择下载的 leeks-x.x.x.zip 文件。不要解压 ZIP 文件。
+重启 IntelliJ IDEA。
+
+## 特性
+
+*   支持 A 股、港股、美股和加密货币行情。
+*   通过 F7 快捷键快速添加/删除股票和基金。
+*   支持成本价、持有份额、收益和收益率估算。
+*   提供分时图和 K 线图（股票）。
+*   可自定义更新时间间隔（使用 Cron 表达式）。
+*   提供隐蔽模式（拼音显示和无颜色涨跌幅）。
+*   可配置代理服务器。
+
 
 ## 使用
 
@@ -72,9 +101,7 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
 
 ![da](./img1.png)
 ![dd](./img2.png)
-
 ![da](./img3.png)
-
 ![da](./img4.png)
 
 ## 常见问题
@@ -87,63 +114,64 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
 ## change
 
 - v1.1   
-  增加了股票的tab，采用腾讯的行情接口，股票轮询间隔10s
+  * 增加了股票的tab，采用腾讯的行情接口，股票轮询间隔10s
 - v1.2   
-  支持了港股和美股 示例代码：（sh000001,sh600519,sz000001,hk00700,usAAPL）代码一般可以在各网页端看得到
+  * 支持了港股和美股 示例代码：（sh000001,sh600519,sz000001,hk00700,usAAPL）代码一般可以在各网页端看得到
 - v1.3    
-  插件由小韭菜更名为Leeks
-  支持了IDEA 2020.1.3,兼容到`IDEA 2017.3`，修复macOS 行高问题
+  * 插件由小韭菜更名为Leeks
+  * 支持了IDEA 2020.1.3,兼容到`IDEA 2017.3`，修复macOS 行高问题
 - v1.4.1   
-  增加了隐蔽模式（全拼音和无色涨跌幅
+  * 增加了隐蔽模式（全拼音和无色涨跌幅
 - v1.4.2  
-  支持到IDEA 2020.2.*
+  * 支持到IDEA 2020.2.*
 - v1.5.1  
-  增加了股票界面按表头排序，设置界面及时生效，不用点击refresh按钮啦  merge from [dengerYang](https://github.com/dengerYang)
+  * 增加了股票界面按表头排序，设置界面及时生效，不用点击refresh按钮啦  merge from [dengerYang](https://github.com/dengerYang)
 - v1.5.2  
-  增加了股票的最高价最低价 . merge from [dengerYang](https://github.com/dengerYang)
+  * 增加了股票的最高价最低价 . merge from [dengerYang](https://github.com/dengerYang)
 - v1.6.1  
-  样式和bug fix,(样式调整，增加当日净值merge from [dengerYang](https://github.com/dengerYang) )
+  * 样式和bug fix,(样式调整，增加当日净值merge from [dengerYang](https://github.com/dengerYang) )
 - v1.6.2  
-  适配IDEA 2020.3
+  * 适配IDEA 2020.3
 - v1.6.3  
-  修复颜色错乱问题 , 日志调整 merge from [qwn3213](https://github.com/qwn3213)
+  * 修复颜色错乱问题 , 日志调整 merge from [qwn3213](https://github.com/qwn3213)
 - v1.7.1  
-  增加日志开关 ,设置界面样式调整 merge from [dengerYang](https://github.com/dengerYang) ，增加新浪股票接口备选 merge from [JulianXG](https://github.com/JulianXG)
+  * 增加日志开关 ,设置界面样式调整 merge from [dengerYang](https://github.com/dengerYang) ，增加新浪股票接口备选 merge from [JulianXG](https://github.com/JulianXG)
 - v1.8.1  
-  增加了虚拟货币的界面
+  * 增加了虚拟货币的界面
 - v1.8.3  
-  增加了分时图和K线图 merge from [dengerYang](https://github.com/dengerYang)
+  * 增加了分时图和K线图 merge from [dengerYang](https://github.com/dengerYang)
 - V1.8.4  
-  bug fix from [DAIE](https://github.com/DA1Y1)
+  * bug fix from [DAIE](https://github.com/DA1Y1)
 - V1.8.5  
-  保存表头顺序 from [DAIE](https://github.com/DA1Y1)
+  * 保存表头顺序 from [DAIE](https://github.com/DA1Y1)
 - V1.9.1  
-  图表界面优化 from [dengerYang](https://github.com/dengerYang)
+  * 图表界面优化 from [dengerYang](https://github.com/dengerYang)
 - V1.9.3  
-  加入代理设置
+  * 加入代理设置
 - V1.9.5  
-  虚拟币行情接口切换为雅虎，必须使用代理才能获取数据
+  * 虚拟币行情接口切换为雅虎，必须使用代理才能获取数据
 - V1.9.8  
-  支持基金和股票成本价，持仓，收益率，收益显示 from [chenheng](https://github.com/RoaringFlame)
+  * 支持基金和股票成本价，持仓，收益率，收益显示 from [chenheng](https://github.com/RoaringFlame)
 - V1.9.9  
-  修复成本价过低时收益金额不正确的问题；from [神驱一梦](https://github.com/BorrisWQBi)
+  * 修复成本价过低时收益金额不正确的问题；from [神驱一梦](https://github.com/BorrisWQBi)
 - v2.0.1  
-  支持自定义更新的时间段 from [dengerYang](https://github.com/dengerYang)
+  * 支持自定义更新的时间段 from [dengerYang](https://github.com/dengerYang)
 - v2.1.0  
-  兼容成本为负的情况 from [bu6030](https://github.com/bu6030)
-- v2.2.0
-  适配IDEA 2023.3 from [WoChen5770](https://github.com/WoChen5770)
+  * 兼容成本为负的情况 from [bu6030](https://github.com/bu6030)
+- v2.2.0 
+  * 适配IDEA 2023.3 from [WoChen5770](https://github.com/WoChen5770)
 - v2.3.0
-  修复腾讯接口港股实时数据。（此前是延时15分钟）
-  更新新浪接口支持港美股。  from [WoChen5770](https://github.com/WoChen5770)
-- v2.4.0
-  适配IDEA 2024.1  from [WoChen5770](https://github.com/WoChen5770)
+  * 修复腾讯接口港股实时数据。（此前是延时15分钟）
+  * 更新新浪接口支持港美股。  from [WoChen5770](https://github.com/WoChen5770)
+- v2.4.0 
+  * 适配IDEA 2024.1  from [WoChen5770](https://github.com/WoChen5770)
 - v2.5.0
   适配IDEA 2024.3  from [RainyQing](https://github.com/RainyQing)
 - v2.6.0
-  优化代码 , 使用@data注解替换所有getter/setter方法
-  新增卖一/买一手数表头显示
-  优化程序开始初始化表头逻辑 , 新增如果添加/删除固定表头同时修改当前表头 from [RainyQing](https://github.com/RainyQing)
+  * 优化代码 , 使用注解替换所有getter/setter方法
+  * 新增卖一/买一手数表头显示
+  * 优化程序开始初始化表头逻辑 , 新增如果添加/删除固定表头同时修改当前表头 from [RainyQing](https://github.com/RainyQing)
 - v2.7.0
-  新增按F7刷新所有股票/基金数据并进行添加/移除操作
-  股票界面鼠标右键新增删除按钮 from [RainyQing](https://github.com/RainyQing)
+  * 新增按F7刷新所有股票/基金数据并进行添加/移除操作
+  * 股票界面鼠标右键新增删除按钮 from [RainyQing](https://github.com/RainyQing)
+
