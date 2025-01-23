@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 public abstract class StockRefreshHandler extends DefaultTableModel {
     private static String[] columnNames;
+
+    private static String[] canEditColumnNames = new String[]{"成本价", "持仓"};
     /**
      * 存放【编码】的位置，更新数据时用到
      */
@@ -46,14 +48,10 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
             List<String> fixedHeaderList = Arrays.asList(fixedHeaderValue.split(","));
 
             // 找到固定表头中新增的内容
-            List<String> newHeaders = fixedHeaderList.stream()
-                    .filter(header -> !memoryHeaderList.contains(header))
-                    .collect(Collectors.toList());
+            List<String> newHeaders = fixedHeaderList.stream().filter(header -> !memoryHeaderList.contains(header)).collect(Collectors.toList());
 
             // 找到固定表头中已经删除的内容
-            List<String> removedHeaders = memoryHeaderList.stream()
-                    .filter(header -> !fixedHeaderList.contains(header))
-                    .collect(Collectors.toList());
+            List<String> removedHeaders = memoryHeaderList.stream().filter(header -> !fixedHeaderList.contains(header)).collect(Collectors.toList());
 
             // 更新内存表头：添加新增字段，移除已删除字段
             memoryHeaderList.addAll(newHeaders);
@@ -112,8 +110,7 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
             Double v2 = NumberUtils.toDouble(StringUtils.remove((String) o2, '%'));
             return v1.compareTo(v2);
         };
-        Arrays.stream("当前价,涨跌,涨跌幅,最高价,最低价".split(",")).map(name -> WindowUtils.getColumnIndexByName(columnNames, name))
-                .filter(index -> index >= 0).forEach(index -> rowSorter.setComparator(index, doubleComparator));
+        Arrays.stream("当前价,涨跌,涨跌幅,最高价,最低价".split(",")).map(name -> WindowUtils.getColumnIndexByName(columnNames, name)).filter(index -> index >= 0).forEach(index -> rowSorter.setComparator(index, doubleComparator));
         table.setRowSorter(rowSorter);
         columnColors(colorful);
     }
@@ -260,7 +257,9 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
 
     @Override
     public boolean isCellEditable(int row, int column) {
-        return false;
+        List<String> list = Arrays.asList(canEditColumnNames);
+        String columnName = columnNames[column];
+        return list.contains(columnName);
     }
 
 
