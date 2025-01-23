@@ -28,6 +28,9 @@ import utils.WindowUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.MalformedURLException;
@@ -36,6 +39,8 @@ import java.util.List;
 
 public class StockWindow {
     public static final String NAME = "Stock";
+
+    private static String[] canEditColumnNames = new String[]{"成本价", "持仓"};
     private JPanel mPanel;
 
     static StockRefreshHandler handler;
@@ -71,31 +76,32 @@ public class StockWindow {
                 }
                 PropertiesComponent instance = PropertiesComponent.getInstance();
                 //将列名的修改放入环境中 key:stock_table_header_key
-                instance.setValue(WindowUtils.STOCK_TABLE_HEADER_KEY, tableHeadChange
-                        .substring(0, tableHeadChange.length() > 0 ? tableHeadChange.length() - 1 : 0));
+                instance.setValue(WindowUtils.STOCK_TABLE_HEADER_KEY, tableHeadChange.substring(0, tableHeadChange.length() > 0 ? tableHeadChange.length() - 1 : 0));
 
             }
 
         });
+
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (table.getSelectedRow() < 0)
-                    return;
-                String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(table.getSelectedRow()), handler.codeColumnIndex));//FIX 移动列导致的BUG
-                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() > 1) {
-//                    // 鼠标左键双击
-//                    int column = table.columnAtPoint(e.getPoint());
-//                    String columnName = table.getColumnName(column);
-//                    if (columnName.equals("持仓") || columnName.equals("成本价")) { // 只针对这两列
-//                        startEditing(column);
-//                    }
+                if (table.getSelectedRow() < 0) return;
+                //获取股票代码
+                String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(table.getSelectedRow()), handler.codeColumnIndex));//FIX 移动列导致
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) { // 单击检测
+                    int row = table.rowAtPoint(e.getPoint());
+                    int col = table.columnAtPoint(e.getPoint());
 
-
+                    if (row >= 0 && col >= 0) {
+                        table.editCellAt(row, col); // 手动触发编辑模式
+                        Component editor = table.getEditorComponent();
+                        if (editor != null) {
+                            editor.requestFocus(); // 聚焦到编辑器
+                        }
+                    }
                 } else if (SwingUtilities.isRightMouseButton(e)) {
                     //鼠标右键
-                    JBPopupFactory.getInstance().createListPopup(new BaseListPopupStep<PopupsUiUtil.StockShowType>("",
-                            PopupsUiUtil.StockShowType.values()) {
+                    JBPopupFactory.getInstance().createListPopup(new BaseListPopupStep<PopupsUiUtil.StockShowType>("", PopupsUiUtil.StockShowType.values()) {
                         @Override
                         public @NotNull String getTextFor(PopupsUiUtil.StockShowType value) {
                             return value.getDesc();
@@ -133,6 +139,113 @@ public class StockWindow {
                 }
             }
         });
+//
+//        // 添加 TableModelListener
+//        table.getModel().addTableModelListener(e -> {
+//            if (e.getType() == TableModelEvent.UPDATE) {
+//                editCellValue();
+//            }
+//        });
+
+//        // 添加 CellEditorListener
+//        table.getDefaultEditor(Object.class).addCellEditorListener(new javax.swing.event.CellEditorListener() {
+//            @Override
+//            public void editingStopped(javax.swing.event.ChangeEvent e) {
+//                editCellValue();
+//            }
+//
+//            @Override
+//            public void editingCanceled(javax.swing.event.ChangeEvent e) {
+//            }
+//        });
+
+        // 添加 CellEditorListener，监听编辑完成事件
+        TableCellEditor cellEditor = table.getDefaultEditor(Object.class);
+        if (cellEditor != null) {
+            cellEditor.addCellEditorListener(new CellEditorListener() {
+                @Override
+                public void editingStopped(ChangeEvent e) {
+                    editCellValue(); // 编辑完成，保存数据
+                }
+
+                @Override
+                public void editingCanceled(ChangeEvent e) {
+                }
+            });
+        }
+    }
+
+    private static void editCellValue() {
+        String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(table.getSelectedRow()), handler.codeColumnIndex));//FIX 移动列导致的BUG
+        int row = table.getSelectedRow();
+        int col = table.getSelectedColumn();
+        if (row >= 0 && col >= 0) {
+            //获取编辑列得名称
+            String editColumnName = table.getColumnName(col);
+            String costPrise = "-1";
+            String bonds = "-1";
+            String editValue = table.getValueAt(row, col).toString();
+            if (editColumnName.equals("成本价")) {
+                costPrise = editValue;
+            } else if (editColumnName.equals("持仓")) {
+                bonds = editValue;
+            }
+            //同时更新配置
+            //1. 获取配置
+            String key = getKeyForName(NAME);
+            // 从 PropertiesComponent 中移除数据
+            String storedValue = instance.getValue(key);
+            //如果获取配置不为空
+            if (StringUtils.isNotBlank(storedValue)) {
+                //根据;切割获取所有股票代码配置
+                String[] split = storedValue.split(";");
+                StringBuilder codeString = new StringBuilder();
+                //循环股票列表
+                for (String splitCode : split) {
+                    //如果股票配置包含但钱当前股票代码 , 更新股票配置
+                    if (splitCode.contains(code)) {
+                        String[] stockConfig = splitCode.split(",");
+                        //用switch判断配置数组里面有多少元素
+                        switch (stockConfig.length) {
+                            case 1:
+                                //如果就一个说明只有代码
+                                costPrise = !costPrise.equals("-1") ? costPrise : "";
+                                bonds = !bonds.equals("-1") ? bonds : "";
+                                if (StringUtils.isNotBlank(costPrise) || StringUtils.isNotBlank(bonds)) {
+                                    splitCode += "," + costPrise + "," + bonds;
+                                }
+                                break;
+                            case 2:
+                                //如果有两个 , 判断是价格还是持仓 , 如果下标为1得不是小数并且是整百 , 说明是持仓
+                                if (StringUtils.isNumeric(stockConfig[1]) && Integer.parseInt(stockConfig[1]) % 100 == 0) {
+                                    //是持仓直接更新持仓
+                                    bonds = !bonds.equals("-1") ? bonds : stockConfig[1];
+                                    splitCode = stockConfig[0] + "," + costPrise + "," + bonds;
+                                } else {
+                                    //不是持仓直接更新成本价
+                                    costPrise = !costPrise.equals("-1") ? costPrise : stockConfig[1];
+                                    splitCode = stockConfig[0] + "," + costPrise + "," + bonds;
+                                }
+                                break;
+                            case 3:
+                                //是持仓直接更新持仓
+                                bonds = !bonds.equals("-1") ? bonds : stockConfig[2];
+                                //不是持仓直接更新成本价
+                                costPrise = !costPrise.equals("-1") ? costPrise : stockConfig[1];
+                                splitCode = stockConfig[0] + "," + costPrise + "," + bonds;
+                                break;
+                            default:
+                                break;
+                        }
+
+                    }
+                    codeString.append(splitCode).append(";");
+
+                }
+                instance.setValue(key, codeString.toString());
+            }
+        }
+        apply();
     }
 
 
@@ -151,16 +264,13 @@ public class StockWindow {
             }
         };
 
-        ToolbarDecorator toolbarDecorator = ToolbarDecorator.createDecorator(table)
-                .addExtraAction(new AnActionButton("持续刷新当前表格数据", AllIcons.Actions.Refresh) {
-                    @Override
-                    public void actionPerformed(@NotNull AnActionEvent e) {
-                        refresh();
-                        refreshAction.setEnabled(true);
-                    }
-                })
-                .addExtraAction(refreshAction)
-                .setToolbarPosition(ActionToolbarPosition.TOP);
+        ToolbarDecorator toolbarDecorator = ToolbarDecorator.createDecorator(table).addExtraAction(new AnActionButton("持续刷新当前表格数据", AllIcons.Actions.Refresh) {
+            @Override
+            public void actionPerformed(@NotNull AnActionEvent e) {
+                refresh();
+                refreshAction.setEnabled(true);
+            }
+        }).addExtraAction(refreshAction).setToolbarPosition(ActionToolbarPosition.TOP);
 
         JPanel toolPanel = toolbarDecorator.createPanel();
         toolbarDecorator.getActionsPanel().add(refreshTimeLabel, BorderLayout.EAST);
@@ -244,8 +354,7 @@ public class StockWindow {
         resultList.setSelectionForeground(UIUtil.getListSelectionForeground(true)); // 选中字体颜色
         resultList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(
-                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 label.setForeground(JBColor.foreground()); // 强制字体颜色
 
