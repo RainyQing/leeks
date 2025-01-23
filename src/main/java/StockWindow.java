@@ -214,6 +214,7 @@ public class StockWindow {
                                 if (StringUtils.isNotBlank(costPrise) || StringUtils.isNotBlank(bonds)) {
                                     splitCode += "," + costPrise + "," + bonds;
                                 }
+                                splitCode = splitCode.split(",").length == 1 ? splitCode.replaceAll(",", "") : splitCode;
                                 break;
                             case 2:
                                 //如果有两个 , 判断是价格还是持仓 , 如果下标为1得不是小数并且是整百 , 说明是持仓
