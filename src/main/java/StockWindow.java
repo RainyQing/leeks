@@ -30,12 +30,15 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Vector;
 
 public class StockWindow {
     public static final String NAME = "Stock";
@@ -173,7 +176,86 @@ public class StockWindow {
                 }
             });
         }
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_DOWN_MASK), "moveUp");
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_DOWN_MASK), "moveDown");
+
+        table.getActionMap().put("moveUp", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                moveRow(-1); // 向上移动
+            }
+        });
+
+        table.getActionMap().put("moveDown", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                moveRow(1); // 向下移动
+                //并配置到配置文件
+            }
+        });
+
     }
+
+    private static void moveRow(int direction) {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow < 0) {
+            return; // 没有选中任何行
+        }
+
+        // 获取模型和目标行索引
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        int targetRow = selectedRow + direction;
+
+        // 确保目标行在有效范围内
+        if (targetRow < 0 || targetRow >= model.getRowCount()) {
+            return;
+        }
+
+        // 交换行数据
+        Vector<?> rowData = (Vector<?>) model.getDataVector().elementAt(selectedRow);
+        model.getDataVector().set(selectedRow, model.getDataVector().elementAt(targetRow));
+        model.getDataVector().set(targetRow, rowData);
+
+        // 通知模型数据已更改
+        model.fireTableDataChanged();
+
+        // 更新选中行
+        table.setRowSelectionInterval(targetRow, targetRow);
+        //更新到配置文件
+        //第几行
+        int row = table.getSelectedRow();
+        //弹窗
+
+        String key = getKeyForName(NAME);
+        // 从 PropertiesComponent 中移除数据
+        String storedValue = instance.getValue(key);
+
+        String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(table.getSelectedRow()), handler.codeColumnIndex));//FIX 移动列导致
+
+        //根据;切割获取所有股票代码配置
+        String[] split = storedValue.split(";");
+        List<String> list = new java.util.ArrayList<>(Arrays.stream(split).toList());
+        String remove = "";
+        for (String s : list) {
+            if (s.contains(code)) {
+                remove = s;
+                list.remove(s);
+                break;
+            }
+        }
+        list.add(row, remove);
+        //将list重新添加到配置文件
+        StringBuilder codeString = new StringBuilder();
+        for (String s : list) {
+            codeString.append(s).append(";");
+        }
+        instance.setValue(key, codeString.toString());
+//        apply();
+    }
+
 
     private static void editCellValue() {
         String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(table.getSelectedRow()), handler.codeColumnIndex));//FIX 移动列导致的BUG
@@ -448,13 +530,13 @@ public class StockWindow {
             }
         });
 
-        // 添加 KeyListener 监听 Esc 键
-        searchDialog.addKeyListener(new KeyAdapter() {
+        // 监听 Esc 键关闭对话框
+        searchDialog.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "closeDialog");
+        searchDialog.getRootPane().getActionMap().put("closeDialog", new AbstractAction() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) { // 判断是否按下了 Esc 键
-                    searchDialog.setVisible(false); // 关闭窗口
-                }
+            public void actionPerformed(ActionEvent e) {
+                searchDialog.setVisible(false); // 关闭窗口
             }
         });
 
