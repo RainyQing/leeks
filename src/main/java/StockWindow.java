@@ -642,6 +642,27 @@ public class StockWindow {
                 }
                 return true; // 消费事件
             }
+            //如果按了delete键 , 删除当前行
+            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_DELETE) {
+                String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(table.getSelectedRow()), handler.codeColumnIndex));//FIX 移动列导致
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    String key = getKeyForName(NAME);
+                    // 从 PropertiesComponent 中移除数据
+                    String storedValue = instance.getValue(key);
+                    if (StringUtils.isNotBlank(storedValue)) {
+                        String[] split = storedValue.split(";");
+                        StringBuilder codeString = new StringBuilder();
+                        for (String splitCode : split) {
+                            if (!splitCode.contains(code) && !splitCode.isEmpty()) { // 关键：只添加不包含目标字符串且不为空的项
+                                codeString.append(splitCode).append(";");
+                            }
+                        }
+                        instance.setValue(key, codeString.toString());
+                    }
+                    apply();
+                }
+            }
             return false;
         });
     }
