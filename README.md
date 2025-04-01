@@ -185,4 +185,7 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
     * 股票界面鼠标右键新增删除按钮 from [RainyQing](https://github.com/RainyQing)
 - v2.8.0
     * 新增点击股票代码行对应得持仓/成本价cell进入编辑模式 from [RainyQing](https://github.com/RainyQing)
+- v2.9.0
+  * 修复置空成本价和持仓数据不正确bug
+  * 新增单行选中股票使用快捷键delete键删除 from [RainyQing](https://github.com/RainyQing)
 
