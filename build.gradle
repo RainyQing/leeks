@@ -41,7 +41,7 @@ dependencies {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
 //    version '2023.3.1'
-    localPath.set('D:\\tool\\dev\\IntelliJ IDEA')
+    localPath.set('C:\\Users\\kmwei\\tool\\dev\\IntelliJ IDEA')
     intellij.setUpdateSinceUntilBuild(true)
     intellij.setSameSinceUntilBuild(false)
 }
