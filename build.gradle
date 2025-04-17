@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.huage2580'
-version '2.9.0'
+version '2.9.1'
 
 java {
     sourceCompatibility = '17'
@@ -62,8 +62,12 @@ patchPluginXml {
         v2.4 适配IDEA 2024.1 -- by: WoChen5770<br>
         v2.5 适配IDEA 2024.3 -- by: RainyQing<br>
         v2.6 优化代码 , 使用@data注解替换所有getter/setter方法  2. 新增卖一/买一手数表头显示  3. 优化程序开始初始化表头逻辑 , 新增如果添加/删除固定表头同时修改当前表头 -- by: RainyQing<br>
+        v2.7 1. 新增按F7刷新所有股票/基金数据并进行添加/移除操作  2. 股票界面鼠标右键新增删除按钮 -- by: RainyQing<br>
+        v2.8 新增点击股票代码行对应得持仓/成本价cell进入编辑模式 -- by: RainyQing<br>
+        v2.9 1. 修复置空成本价和持仓数据不正确bug  2. 新增单行选中股票使用快捷键delete键删除 -- by: RainyQing<br>
+        v2.9.1 修复插件兼容IDEA 2025.1 -- by: RainyQing<br>
       """)
-    sinceBuild.set('233.*')  //最低版本限制
+    sinceBuild.set('243.*')  //最低版本限制
     untilBuild.set(null) //最高版本限制 好像必须指定
 }
 

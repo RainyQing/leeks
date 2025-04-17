@@ -188,4 +188,6 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
 - v2.9.0
   * 修复置空成本价和持仓数据不正确bug
   * 新增单行选中股票使用快捷键delete键删除 from [RainyQing](https://github.com/RainyQing)
+- v2.9.1
+  * 修复插件兼容IDEA 2025.1 from [RainyQing](https://github.com/RainyQing)
 
