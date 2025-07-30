@@ -63,7 +63,7 @@ public class TencentStockHandler extends StockRefreshHandler {
             return;
         }
         try {
-            String result = HttpClientPool.getHttpClient().get("http://qt.gtimg.cn/q=" + urlPara);
+            String result = HttpClientPool.getHttpClient().get("https://qt.gtimg.cn/q=" + urlPara);
             parse(result);
             updateUI();
         } catch (Exception e) {

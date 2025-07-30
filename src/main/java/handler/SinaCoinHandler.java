@@ -15,7 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 @Deprecated
 public class SinaCoinHandler extends CoinRefreshHandler {
-    private final String URL = "http://hq.sinajs.cn/list=";
+    private final String URL = "https://hq.sinajs.cn/list=";
     //private static final Pattern DEFAULT_STOCK_PATTERN = Pattern.compile("var hq_str_(\\w+?)=\"(.*?)\";");
     private final JLabel refreshTimeLabel;
 
