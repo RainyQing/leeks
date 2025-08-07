@@ -74,6 +74,9 @@ public class HttpClientPool {
     private String getResponseContent(String url, HttpRequestBase request) throws Exception {
         HttpResponse response = null;
         try {
+            if (url.contains("hq.sinajs.cn")) {
+                request.setHeader("Referer", "https://finance.sina.com.cn");
+            }
             response = httpClient.execute(request);
             return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
         } catch (Exception e) {

@@ -68,7 +68,7 @@ patchPluginXml {
         v2.9.1 修复插件兼容IDEA 2025.1 -- by: RainyQing<br>
       """)
     sinceBuild.set('243.*')  //最低版本限制
-    untilBuild.set(null) //最高版本限制 好像必须指定
+    untilBuild.set('252.*') //最高版本限制 好像必须指定
 }
 
 tasks.withType(JavaCompile) {
