@@ -192,4 +192,5 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
   * 修复插件兼容IDEA 2025.1 from [RainyQing](https://github.com/RainyQing)
 - v2.9.2
   * 修复插件兼容IDEA 2025.2 from [RainyQing](https://github.com/RainyQing)
+  * 新浪接口添加Referer头，接口调用升级为https(部分网络下http无法正常访问) from [fangzhengjin](https://github.com/fangzhengjin)
 
