@@ -174,7 +174,7 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
 - v2.4.0
     * 适配IDEA 2024.1 from [WoChen5770](https://github.com/WoChen5770)
 - v2.5.0
-  适配IDEA 2024.3 from [RainyQing](https://github.com/RainyQing)
+    * 适配IDEA 2024.3 from [RainyQing](https://github.com/RainyQing)
 - v2.6.0
     * 优化代码 , 使用注解替换所有getter/setter方法
     * 新增卖一/买一手数表头显示
@@ -190,4 +190,6 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
   * 新增单行选中股票使用快捷键delete键删除 from [RainyQing](https://github.com/RainyQing)
 - v2.9.1
   * 修复插件兼容IDEA 2025.1 from [RainyQing](https://github.com/RainyQing)
+- v2.9.2
+  * 修复插件兼容IDEA 2025.2 from [RainyQing](https://github.com/RainyQing)
 

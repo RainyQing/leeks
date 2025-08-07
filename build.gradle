@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.huage2580'
-version '2.9.1'
+version '2.9.2'
 
 java {
     sourceCompatibility = '17'
@@ -41,7 +41,8 @@ dependencies {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
 //    version '2023.3.1'
-    localPath.set('C:\\Users\\kmwei\\tool\\dev\\IntelliJ IDEA')
+//    localPath.set('C:\\Users\\kmwei\\tool\\dev\\IntelliJ IDEA')
+    localPath.set('E:\\tool\\idea')
     intellij.setUpdateSinceUntilBuild(true)
     intellij.setSameSinceUntilBuild(false)
 }
@@ -67,8 +68,8 @@ patchPluginXml {
         v2.9 1. 修复置空成本价和持仓数据不正确bug  2. 新增单行选中股票使用快捷键delete键删除 -- by: RainyQing<br>
         v2.9.1 修复插件兼容IDEA 2025.1 -- by: RainyQing<br>
       """)
-    sinceBuild.set('243.*')  //最低版本限制
-    untilBuild.set(null) //最高版本限制 好像必须指定
+    sinceBuild.set('251.*')  //最低版本限制
+    untilBuild.set(null) //最高版本限制
 }
 
 tasks.withType(JavaCompile) {
