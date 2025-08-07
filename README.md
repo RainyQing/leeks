@@ -186,11 +186,11 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
 - v2.8.0
     * 新增点击股票代码行对应得持仓/成本价cell进入编辑模式 from [RainyQing](https://github.com/RainyQing)
 - v2.9.0
-  * 修复置空成本价和持仓数据不正确bug
-  * 新增单行选中股票使用快捷键delete键删除 from [RainyQing](https://github.com/RainyQing)
+    * 修复置空成本价和持仓数据不正确bug
+    * 新增单行选中股票使用快捷键delete键删除 from [RainyQing](https://github.com/RainyQing)
 - v2.9.1
-  * 修复插件兼容IDEA 2025.1 from [RainyQing](https://github.com/RainyQing)
+    * 修复插件兼容IDEA 2025.1 from [RainyQing](https://github.com/RainyQing)
 - v2.9.2
-  * 修复插件兼容IDEA 2025.2 from [RainyQing](https://github.com/RainyQing)
-  * 新浪接口添加Referer头，接口调用升级为https(部分网络下http无法正常访问) from [fangzhengjin](https://github.com/fangzhengjin)
+    * 修复插件兼容IDEA 2025.2 from [RainyQing](https://github.com/RainyQing)
+    * 新浪接口添加Referer头，接口调用升级为https(部分网络下http无法正常访问) from [fangzhengjin](https://github.com/fangzhengjin)
 
