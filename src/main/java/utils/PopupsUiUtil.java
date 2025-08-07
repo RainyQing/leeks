@@ -35,7 +35,7 @@ public class PopupsUiUtil {
         // 带水印  http://j4.dfcfw.com/charts/pic6/590008.png
         // 无水印  http://j4.dfcfw.com/charts/pic7/590008.png
         // 暂时先硬编码，后续再优化调整
-        TabInfo tabInfo = new TabInfo(new JLabel(new ImageIcon(new URL(String.format("http://j4.dfcfw.com/charts/pic7/%s.png?%s",
+        TabInfo tabInfo = new TabInfo(new JLabel(new ImageIcon(new URL(String.format("https://j4.dfcfw.com/charts/pic7/%s.png?%s",
                 fundCode, System.currentTimeMillis())))));
         tabInfo.setText(type.getDesc());
         JBTabsImpl tabs = new JBTabsImpl(LogUtil.getProject());
@@ -54,7 +54,7 @@ public class PopupsUiUtil {
      */
     public static String getImageUrlByStock(String stockCode, StockShowType type) throws MalformedURLException {
         String prefix = StringUtils.substring(stockCode, 0, 2);
-        String url = "http://image.sinajs.cn/newchart/";
+        String url = "https://image.sinajs.cn/newchart/";
         switch (prefix) {
             case "sh":
             case "sz":

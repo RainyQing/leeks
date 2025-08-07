@@ -62,7 +62,7 @@ public class TianTianFundHandler extends FundRefreshHandler {
         for (String code : codeList) {
             new Thread(() -> {
                 try {
-                    String result = HttpClientPool.getHttpClient().get("http://fundgz.1234567.com.cn/js/" + code + ".js?rt=" + System.currentTimeMillis());
+                    String result = HttpClientPool.getHttpClient().get("https://fundgz.1234567.com.cn/js/" + code + ".js?rt=" + System.currentTimeMillis());
                     String json = result.substring(8, result.length() - 2);
                     if (!json.isEmpty()) {
                         FundBean bean = gson.fromJson(json, FundBean.class);

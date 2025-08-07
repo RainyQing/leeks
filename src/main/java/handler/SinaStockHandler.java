@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SinaStockHandler extends StockRefreshHandler {
-    private final String URL = "http://hq.sinajs.cn/list=";
+    private final String URL = "https://hq.sinajs.cn/list=";
     private final Pattern DEFAULT_STOCK_PATTERN = Pattern.compile("var hq_str_(\\w+?)=\"(.*?)\";");
     private final JLabel refreshTimeLabel;
 
