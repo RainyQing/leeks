@@ -52,7 +52,7 @@ idea插件，查看基金，股票：支持A股，港股，美股
 ### 一、配置
 
 #### 快捷配置(强烈推荐)
-* 在idea界面按F7弹出输入框 , 输入股票代码/名字/名字缩写搜索股票 , 双击/上下键选择并按回车进行股票新增或者删除。在股票界面选中股票鼠标右键也可以进行删除操作。
+* 在idea界面按F7弹出输入框 , 输入股票代码/名字/名字缩写搜索股票(可通过设置修改关闭F7快捷键) , 双击/上下键选择并按回车进行股票新增或者删除。在股票界面选中股票鼠标右键也可以进行删除操作。
 ![da](img/img3.png)
 ![da](img/img4.png)
 
@@ -193,4 +193,6 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
 - v2.9.2
     * 修复插件兼容IDEA 2025.2 from [RainyQing](https://github.com/RainyQing)
     * 新浪接口添加Referer头，接口调用升级为https(部分网络下http无法正常访问) from [fangzhengjin](https://github.com/fangzhengjin)
+- v2.9.3
+    * 新增设置中关闭F7快捷键搜索(暂时解决快捷键冲突问题 , 后续再寻找更合适得方案)  from [RainyQing](https://github.com/RainyQing)
 

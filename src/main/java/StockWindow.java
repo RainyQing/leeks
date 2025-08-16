@@ -632,7 +632,8 @@ public class StockWindow {
     // 全局快捷键监听
     private void bindGlobalKeyListener() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
-            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_F7) {
+            boolean closeLog = PropertiesComponent.getInstance().getBoolean("key_close_f7");
+            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_F7 && !closeLog) {
                 listModel.clear(); // 清空结果
                 if (!searchDialog.isVisible()) {
                     searchField.setText(""); // 清空输入框

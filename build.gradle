@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.huage2580'
-version '2.9.2'
+version '2.9.3'
 
 java {
     sourceCompatibility = '17'
@@ -65,8 +65,10 @@ patchPluginXml {
         v2.6 优化代码 , 使用@data注解替换所有getter/setter方法  2. 新增卖一/买一手数表头显示  3. 优化程序开始初始化表头逻辑 , 新增如果添加/删除固定表头同时修改当前表头 -- by: RainyQing<br>
         v2.7 1. 新增按F7刷新所有股票/基金数据并进行添加/移除操作  2. 股票界面鼠标右键新增删除按钮 -- by: RainyQing<br>
         v2.8 新增点击股票代码行对应得持仓/成本价cell进入编辑模式 -- by: RainyQing<br>
-        v2.9 1. 修复置空成本价和持仓数据不正确bug  2. 新增单行选中股票使用快捷键delete键删除 -- by: RainyQing<br>
+        v2.9 0. 修复置空成本价和持仓数据不正确bug  2. 新增单行选中股票使用快捷键delete键删除 -- by: RainyQing<br>
         v2.9.1 修复插件兼容IDEA 2025.1 -- by: RainyQing<br>
+        v2.9.2 1. 修复插件兼容IDEA 2025.2 from [RainyQing](https://github.com/RainyQing) 2. 新浪接口添加Referer头，接口调用升级为https(部分网络下http无法正常访问) from [fangzhengjin](https://github.com/fangzhengjin)
+        v2.9.3 新增设置中关闭F7快捷键搜索(暂时解决快捷键冲突问题 , 后续再寻找更合适得方案)  from [RainyQing](https://github.com/RainyQing)
       """)
     sinceBuild.set('251.*')  //最低版本限制
     untilBuild.set(null) //最高版本限制
