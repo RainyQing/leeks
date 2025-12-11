@@ -1,14 +1,14 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '1.13.3'
+    id 'org.jetbrains.intellij' version '1.17.3'
 }
 
 group 'com.huage2580'
-version '2.9.3'
+version '2.9.4'
 
 java {
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
+    sourceCompatibility = '21'
+    targetCompatibility = '21'
 }
 
 
@@ -34,15 +34,15 @@ dependencies {
     implementation group: 'cn.hutool', name: 'hutool-all', version: '5.8.13'
     //fastjson
     implementation group: 'com.alibaba', name: 'fastjson', version: '2.0.38'
-    compileOnly(group: 'org.projectlombok', name: 'lombok', version: '1.18.26')
-    annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: '1.18.26')
+    compileOnly(group: 'org.projectlombok', name: 'lombok', version: '1.18.30')
+    annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: '1.18.30')
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
 //    version '2023.3.1'
-//    localPath.set('C:\\Users\\kmwei\\tool\\dev\\IntelliJ IDEA')
-    localPath.set('E:\\tool\\idea')
+    localPath.set('C:\\Users\\kmwei\\dev\\tool\\idea')
+//    localPath.set('E:\\tool\\idea')7
     intellij.setUpdateSinceUntilBuild(true)
     intellij.setSameSinceUntilBuild(false)
 }
@@ -69,8 +69,9 @@ patchPluginXml {
         v2.9.1 修复插件兼容IDEA 2025.1 -- by: RainyQing<br>
         v2.9.2 1. 修复插件兼容IDEA 2025.2 from [RainyQing](https://github.com/RainyQing) 2. 新浪接口添加Referer头，接口调用升级为https(部分网络下http无法正常访问) from [fangzhengjin](https://github.com/fangzhengjin)
         v2.9.3 新增设置中关闭F7快捷键搜索(暂时解决快捷键冲突问题 , 后续再寻找更合适得方案)  from [RainyQing](https://github.com/RainyQing)
+        v2.9.4 修复插件兼容IDEA 2025.3  from [RainyQing](https://github.com/RainyQing)
       """)
-    sinceBuild.set('251.*')  //最低版本限制
+    sinceBuild.set('253')  //最低版本限制
     untilBuild.set(null) //最高版本限制
 }
 

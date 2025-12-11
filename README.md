@@ -195,4 +195,6 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
     * 新浪接口添加Referer头，接口调用升级为https(部分网络下http无法正常访问) from [fangzhengjin](https://github.com/fangzhengjin)
 - v2.9.3
     * 新增设置中关闭F7快捷键搜索(暂时解决快捷键冲突问题 , 后续再寻找更合适得方案)  from [RainyQing](https://github.com/RainyQing)
+- v2.9.4
+    * 修复插件兼容IDEA 2025.3  from [RainyQing](https://github.com/RainyQing)
 
