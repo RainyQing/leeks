@@ -62,7 +62,7 @@ public class FundWindow implements ToolWindowFactory {
         contentManager.addContent(content);
         contentManager.addContent(content_stock);
         contentManager.addContent(content_coin);
-        if (StringUtils.isEmpty(PropertiesComponent.getInstance().getValue("key_funds"))) {
+        if (ConfigManager.getInstance().getFundCodes().isEmpty()) {
             // 没有配置基金数据，选择展示股票
             contentManager.setSelectedContent(content_stock);
         }
@@ -78,7 +78,7 @@ public class FundWindow implements ToolWindowFactory {
     }
 
     private void loadProxySetting() {
-        String proxyStr = PropertiesComponent.getInstance().getValue("key_proxy");
+        String proxyStr = ConfigManager.getInstance().getProxySetting();
         HttpClientPool.getHttpClient().buildHttpClient(proxyStr);
     }
 
@@ -190,8 +190,8 @@ public class FundWindow implements ToolWindowFactory {
 
     public static void apply() {
         if (fundRefreshHandler != null) {
-            PropertiesComponent instance = PropertiesComponent.getInstance();
-            fundRefreshHandler.setStriped(instance.getBoolean("key_table_striped"));
+            ConfigManager configManager = ConfigManager.getInstance();
+            fundRefreshHandler.setStriped(configManager.isTableStriped());
             fundRefreshHandler.clearRow();
             fundRefreshHandler.setupTable(loadFunds());
             refresh();
@@ -200,8 +200,8 @@ public class FundWindow implements ToolWindowFactory {
 
     public static void refresh() {
         if (fundRefreshHandler != null) {
-            PropertiesComponent instance = PropertiesComponent.getInstance();
-            boolean colorful = instance.getBoolean("key_colorful");
+            ConfigManager configManager = ConfigManager.getInstance();
+            boolean colorful = configManager.isColorfulEnabled();
             fundRefreshHandler.refreshColorful(colorful);
             List<String> codes = loadFunds();
             if (CollectionUtils.isEmpty(codes)) {
@@ -212,10 +212,7 @@ public class FundWindow implements ToolWindowFactory {
                 HashMap<String, Object> dataMap = new HashMap<>();
                 dataMap.put(HandlerJob.KEY_HANDLER, fundRefreshHandler);
                 dataMap.put(HandlerJob.KEY_CODES, codes);
-                String cronExpression = instance.getValue("key_cron_expression_fund");
-                if (StringUtils.isEmpty(cronExpression)) {
-                    cronExpression = "0 * * * * ?";
-                }
+                String cronExpression = configManager.getFundCronExpression();
                 quartzManager.runJob(HandlerJob.class, cronExpression, dataMap);
             }
         }

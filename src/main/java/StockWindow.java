@@ -685,8 +685,8 @@ public class StockWindow {
     public static void apply() {
         if (handler != null) {
             handler = factoryHandler();
-            PropertiesComponent instance = PropertiesComponent.getInstance();
-            handler.setStriped(instance.getBoolean("key_table_striped"));
+            ConfigManager configManager = ConfigManager.getInstance();
+            handler.setStriped(configManager.isTableStriped());
             handler.clearRow();
             handler.setupTable(loadStocks());
             refresh();
@@ -695,21 +695,18 @@ public class StockWindow {
 
     public static void refresh() {
         if (handler != null) {
-            PropertiesComponent instance = PropertiesComponent.getInstance();
-            handler.refreshColorful(instance.getBoolean("key_colorful"));
+            ConfigManager configManager = ConfigManager.getInstance();
+            handler.refreshColorful(configManager.isColorfulEnabled());
             List<String> codes = loadStocks();
             if (CollectionUtils.isEmpty(codes)) {
                 stop(); //如果没有数据则不需要启动时钟任务浪费资源
             } else {
                 handler.handle(codes);
-                QuartzManager quartzManager = QuartzManager.getInstance(NAME);
+                QuartzManager quartzManager = QuartzManager.getInstance(NAME); // 时钟任务
                 HashMap<String, Object> dataMap = new HashMap<>();
                 dataMap.put(HandlerJob.KEY_HANDLER, handler);
                 dataMap.put(HandlerJob.KEY_CODES, codes);
-                String cronExpression = instance.getValue("key_cron_expression_stock");
-                if (StringUtils.isEmpty(cronExpression)) {
-                    cronExpression = "*/10 * * * * ?";
-                }
+                String cronExpression = configManager.getStockCronExpression();
                 quartzManager.runJob(HandlerJob.class, cronExpression, dataMap);
             }
         }
