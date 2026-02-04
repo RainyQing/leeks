@@ -364,6 +364,9 @@ public class StockWindow {
 
         // 绑定全局快捷键 F7
         bindGlobalKeyListener();
+
+        // 添加表格行拖动功能
+        implementRowDragAndDrop();
     }
 
     // 初始化搜索弹窗
@@ -722,6 +725,95 @@ public class StockWindow {
     private static List<String> loadStocks() {
 //        return FundWindow.getConfigList("key_stocks", "[,，]");
         return SettingsWindow.getConfigList("key_stocks");
+    }
+
+    /**
+     * 实现表格行拖动功能
+     */
+    private void implementRowDragAndDrop() {
+        final int[] draggedRow = new int[]{-1}; // 记录被拖动的行
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                // 检查是否点击在有效行上
+                int row = table.rowAtPoint(e.getPoint());
+                if (row >= 0) {
+                    // 检查是否点击在行的非编辑区域
+                    int col = table.columnAtPoint(e.getPoint());
+                    if (col >= 0) {
+                        // 记录拖动开始的行
+                        draggedRow[0] = row;
+                        // 选中被拖动的行
+                        table.setRowSelectionInterval(row, row);
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                // 拖动结束时重置状态
+                draggedRow[0] = -1;
+            }
+        });
+
+        table.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                // 只有当有行被拖动时才处理
+                if (draggedRow[0] != -1) {
+                    // 计算目标行
+                    int targetRow = table.rowAtPoint(e.getPoint());
+                    // 确保目标行在有效范围内且与原行不同
+                    if (targetRow >= 0 && targetRow != draggedRow[0]) {
+                        // 直接交换两行数据
+                        swapRows(draggedRow[0], targetRow);
+                        // 更新拖动的行
+                        draggedRow[0] = targetRow;
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * 交换两行数据
+     * @param row1 第一行索引
+     * @param row2 第二行索引
+     */
+    private void swapRows(int row1, int row2) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        // 确保行索引有效
+        if (row1 >= 0 && row1 < model.getRowCount() && row2 >= 0 && row2 < model.getRowCount()) {
+            // 交换行数据
+            Vector<?> rowData1 = (Vector<?>) model.getDataVector().elementAt(row1);
+            Vector<?> rowData2 = (Vector<?>) model.getDataVector().elementAt(row2);
+            model.getDataVector().set(row1, rowData2);
+            model.getDataVector().set(row2, rowData1);
+            // 通知模型数据已更改
+            model.fireTableDataChanged();
+            // 更新选中行
+            table.setRowSelectionInterval(row2, row2);
+            // 更新到配置文件
+            updateConfigFile();
+        }
+    }
+
+    /**
+     * 更新配置文件
+     */
+    private void updateConfigFile() {
+        String key = getKeyForName(NAME);
+        // 从表格中获取所有股票代码
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        StringBuilder codeString = new StringBuilder();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String code = String.valueOf(model.getValueAt(i, handler.codeColumnIndex));
+            if (StringUtils.isNotBlank(code)) {
+                codeString.append(code).append(";");
+            }
+        }
+        instance.setValue(key, codeString.toString());
     }
 
 }

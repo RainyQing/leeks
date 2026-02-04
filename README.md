@@ -85,7 +85,8 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
 
 
 #### 快捷排序
-选中需要排序的基金或者股票，alt+上为向上移动 , ctrl+下为向下移动 ( 为啥不都用alt或者ctrl , 因为按键冲突了 )
+1. 选中需要排序的基金或者股票上下拖动，
+2. 选中需要排序的基金或者股票 , alt+上为向上移动 , ctrl+下为向下移动 ( 为啥不都用alt或者ctrl , 因为按键冲突了 )
 
 
 ### 二、加密货币的选项
@@ -202,4 +203,6 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
     * 新增设置中关闭F7快捷键搜索(暂时解决快捷键冲突问题 , 后续再寻找更合适得方案)  from [RainyQing](https://github.com/RainyQing)
 - v2.9.4
     * 修复插件兼容IDEA 2025.3  from [RainyQing](https://github.com/RainyQing)
+- v2.9.5
+   *  新增拖动股票上线移动排序  from [RainyQing](https://github.com/RainyQing)
 
