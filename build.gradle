@@ -70,7 +70,7 @@ patchPluginXml {
         v2.9.2 1. 修复插件兼容IDEA 2025.2 from [RainyQing](https://github.com/RainyQing) 2. 新浪接口添加Referer头，接口调用升级为https(部分网络下http无法正常访问) from [fangzhengjin](https://github.com/fangzhengjin)
         v2.9.3 新增设置中关闭F7快捷键搜索(暂时解决快捷键冲突问题 , 后续再寻找更合适得方案)  from [RainyQing](https://github.com/RainyQing)
         v2.9.4 修复插件兼容IDEA 2025.3  from [RainyQing](https://github.com/RainyQing)
-        v2.9.5 新增拖动股票上线移动排序  from [RainyQing](https://github.com/RainyQing)
+        v2.9.5 新增拖动股票上下移动排序  from [RainyQing](https://github.com/RainyQing)
       """)
     sinceBuild.set('253')  //最低版本限制
     untilBuild.set(null) //最高版本限制
