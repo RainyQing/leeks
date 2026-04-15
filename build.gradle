@@ -4,11 +4,11 @@ plugins {
 }
 
 group 'com.huage2580'
-version '2.9.5'
+version '2.9.6'
 
 java {
-    sourceCompatibility = '21'
-    targetCompatibility = '21'
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
 }
 
 
@@ -71,8 +71,9 @@ patchPluginXml {
         v2.9.3 新增设置中关闭F7快捷键搜索(暂时解决快捷键冲突问题 , 后续再寻找更合适得方案)  from [RainyQing](https://github.com/RainyQing)
         v2.9.4 修复插件兼容IDEA 2025.3  from [RainyQing](https://github.com/RainyQing)
         v2.9.5 新增拖动股票上下移动排序  from [RainyQing](https://github.com/RainyQing)
+        v2.9.6 修复插件兼容IDEA 2026.1  from [RainyQing](https://github.com/RainyQing)
       """)
-    sinceBuild.set('253')  //最低版本限制
+    sinceBuild.set('261')  //最低版本限制
     untilBuild.set(null) //最高版本限制
 }
 
