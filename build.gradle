@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.huage2580'
-version '2.9.6'
+version '2.9.7'
 
 java {
     sourceCompatibility = '17'
@@ -72,6 +72,7 @@ patchPluginXml {
         v2.9.4 修复插件兼容IDEA 2025.3  from [RainyQing](https://github.com/RainyQing)
         v2.9.5 新增拖动股票上下移动排序  from [RainyQing](https://github.com/RainyQing)
         v2.9.6 修复插件兼容IDEA 2026.1  from [RainyQing](https://github.com/RainyQing)
+        v2.9.7 修复超级藏模式失效问题  from [RainyQing](https://github.com/RainyQing)
       """)
     sinceBuild.set('261')  //最低版本限制
     untilBuild.set(null) //最高版本限制

@@ -207,4 +207,5 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
    *  新增拖动股票上下移动排序  from [RainyQing](https://github.com/RainyQing)
 - v2.9.6
     * 修复插件兼容IDEA 2026.1  from [RainyQing](https://github.com/RainyQing)
-
+- v2.9.7
+    * 修复超级藏模式失效问题  from [RainyQing](https://github.com/RainyQing)

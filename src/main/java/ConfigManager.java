@@ -39,7 +39,8 @@ public class ConfigManager {
     
     // 获取彩色显示设置
     public boolean isColorfulEnabled() {
-        return properties.getBoolean(ConfigKeys.KEY_COLORFUL, true);
+        // Keep legacy behavior: default to super-hide mode when unset.
+        return properties.getBoolean(ConfigKeys.KEY_COLORFUL, false);
     }
     
     // 获取代理设置
