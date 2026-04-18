@@ -209,3 +209,5 @@ double shift，连按两下shift，输入leeks，找到toolWindow，打开以后
     * 修复插件兼容IDEA 2026.1  from [RainyQing](https://github.com/RainyQing)
 - v2.9.7
     * 修复超级藏模式失效问题  from [RainyQing](https://github.com/RainyQing)
+- v2.9.8
+    * 1. 编辑第二条成本价和持仓会清空第一条成本价和持仓问题 2. 修复刷新按钮会把把成本价/持仓冲掉问题 3. 修复拖动和上下移动丢会丢失成本价和持仓数据问题  from [RainyQing](https://github.com/RainyQing)
