@@ -133,6 +133,7 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 double temp = NumberUtils.toDouble(StringUtils.remove(Objects.toString(value), "%"));
                 if (temp > 0) {
                     if (colorful) {
@@ -147,10 +148,9 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
                         setForeground(JBColor.GRAY);
                     }
                 } else if (temp == 0) {
-                    Color orgin = getForeground();
-                    setForeground(orgin);
+                    setForeground(JBColor.foreground());
                 }
-                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                return component;
             }
         };
 

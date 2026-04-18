@@ -40,7 +40,7 @@ public class TencentStockHandler extends StockRefreshHandler {
             //兼容原有设置
             String[] strArray;
             if (str.contains(",")) {
-                strArray = str.split(",");
+                strArray = str.split(",", -1);
             } else {
                 strArray = new String[]{str};
             }
@@ -91,25 +91,28 @@ public class TencentStockHandler extends StockRefreshHandler {
 
             BigDecimal now = new BigDecimal(values[3]);
             String costPriceStr = bean.getCostPrise();
-            if (StringUtils.isNotEmpty(costPriceStr)) {
-                BigDecimal costPriceDec = new BigDecimal(costPriceStr);
-                BigDecimal incomeDiff = now.add(costPriceDec.negate());
-                if (costPriceDec.compareTo(BigDecimal.ZERO) <= 0) {
-                    bean.setIncomePercent("0");
-                } else {
-                    BigDecimal incomePercentDec = incomeDiff.divide(costPriceDec, 5, RoundingMode.HALF_UP)
-                            .multiply(BigDecimal.TEN)
-                            .multiply(BigDecimal.TEN)
-                            .setScale(3, RoundingMode.HALF_UP);
-                    bean.setIncomePercent(incomePercentDec.toString());
-                }
+            if (StringUtils.isNotBlank(costPriceStr)) {
+                try {
+                    BigDecimal costPriceDec = new BigDecimal(costPriceStr);
+                    BigDecimal incomeDiff = now.add(costPriceDec.negate());
+                    if (costPriceDec.compareTo(BigDecimal.ZERO) <= 0) {
+                        bean.setIncomePercent("0");
+                    } else {
+                        BigDecimal incomePercentDec = incomeDiff.divide(costPriceDec, 5, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal.TEN)
+                                .multiply(BigDecimal.TEN)
+                                .setScale(3, RoundingMode.HALF_UP);
+                        bean.setIncomePercent(incomePercentDec.toString());
+                    }
 
-                String bondStr = bean.getBonds();
-                if (StringUtils.isNotEmpty(bondStr)) {
-                    BigDecimal bondDec = new BigDecimal(bondStr);
-                    BigDecimal incomeDec = incomeDiff.multiply(bondDec)
-                            .setScale(2, RoundingMode.HALF_UP);
-                    bean.setIncome(incomeDec.toString());
+                    String bondStr = bean.getBonds();
+                    if (StringUtils.isNotBlank(bondStr)) {
+                        BigDecimal bondDec = new BigDecimal(bondStr);
+                        BigDecimal incomeDec = incomeDiff.multiply(bondDec)
+                                .setScale(2, RoundingMode.HALF_UP);
+                        bean.setIncome(incomeDec.toString());
+                    }
+                } catch (NumberFormatException ignore) {
                 }
             }
 

@@ -34,18 +34,7 @@ public class StockBean {
     //配置code同时配置成本价和成本值
     public StockBean(String code) {
         if (StringUtils.isNotBlank(code)) {
-            String[] codeStr = code.split(",");
-            if (codeStr.length > 2) {
-                this.code = codeStr[0];
-                this.costPrise = codeStr[1];
-//                this.cost = codeStr[2];
-                this.bonds = codeStr[2];
-            } else {
-                this.code = codeStr[0];
-                this.costPrise = "--";
-//                this.cost = "--";
-                this.bonds = "--";
-            }
+            applyConfigParts(code.split(",", -1), true);
         } else {
             this.code = code;
         }
@@ -54,15 +43,41 @@ public class StockBean {
 
     public StockBean(String code, Map<String, String[]> codeMap) {
         this.code = code;
+        this.costPrise = null;
+        this.bonds = null;
         if (codeMap.containsKey(code)) {
-            String[] codeStr = codeMap.get(code);
-            if (codeStr.length > 2) {
-                this.code = codeStr[0];
-                this.costPrise = codeStr[1];
-//                this.cost = codeStr[2];
-                this.bonds = codeStr[2];
-            }
+            applyConfigParts(codeMap.get(code), false);
         }
+    }
+
+    private void applyConfigParts(String[] codeStr, boolean usePlaceholderForEmpty) {
+        if (codeStr == null || codeStr.length == 0) {
+            return;
+        }
+        this.code = codeStr[0];
+        if (codeStr.length >= 3) {
+            this.costPrise = codeStr[1];
+            this.bonds = codeStr[2];
+            return;
+        }
+        if (codeStr.length == 2) {
+            String second = StringUtils.defaultString(codeStr[1]);
+            if (StringUtils.isNumeric(second)) {
+                try {
+                    if (Long.parseLong(second) % 100 == 0) {
+                        this.costPrise = "";
+                        this.bonds = second;
+                        return;
+                    }
+                } catch (NumberFormatException ignore) {
+                }
+            }
+            this.costPrise = second;
+            this.bonds = "";
+            return;
+        }
+        this.costPrise = usePlaceholderForEmpty ? "--" : null;
+        this.bonds = usePlaceholderForEmpty ? "--" : null;
     }
 
 
@@ -106,9 +121,9 @@ public class StockBean {
             case "持仓":
                 return this.getBonds();
             case "收益率":
-                return this.getCostPrise() != null ? this.getIncomePercent() + "%" : this.getIncomePercent();
+                return StringUtils.isBlank(this.getIncomePercent()) ? "" : this.getIncomePercent() + "%";
             case "收益":
-                return this.getIncome();
+                return StringUtils.defaultString(this.getIncome());
             case "更新时间":
                 String timeStr = "--";
                 if (this.getTime() != null) {

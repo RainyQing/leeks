@@ -30,18 +30,28 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 public class StockWindow {
     public static final String NAME = "Stock";
+    private static final String COST_COLUMN_NAME = "\u6210\u672c\u4ef7";
+    private static final String BONDS_COLUMN_NAME = "\u6301\u4ed3";
+    private static final String NOW_COLUMN_NAME = "\u5f53\u524d\u4ef7";
+    private static final String INCOME_PERCENT_COLUMN_NAME = "\u6536\u76ca\u7387";
+    private static final String INCOME_COLUMN_NAME = "\u6536\u76ca";
 
     private static String[] canEditColumnNames = new String[]{"成本价", "持仓"};
     private JPanel mPanel;
@@ -50,6 +60,7 @@ public class StockWindow {
 
     static JBTable table;
     static JLabel refreshTimeLabel;
+    static TableModelListener editPersistenceListener;
 
 
     private JDialog searchDialog; // 搜索弹窗
@@ -215,15 +226,22 @@ public class StockWindow {
         }
 
         // 交换行数据
-        Vector<?> rowData = (Vector<?>) model.getDataVector().elementAt(selectedRow);
-        model.getDataVector().set(selectedRow, model.getDataVector().elementAt(targetRow));
-        model.getDataVector().set(targetRow, rowData);
+        int sourceModelRow = table.convertRowIndexToModel(selectedRow);
+        int targetModelRow = table.convertRowIndexToModel(targetRow);
+        Vector<?> rowData = (Vector<?>) model.getDataVector().elementAt(sourceModelRow);
+        model.getDataVector().set(sourceModelRow, model.getDataVector().elementAt(targetModelRow));
+        model.getDataVector().set(targetModelRow, rowData);
 
         // 通知模型数据已更改
         model.fireTableDataChanged();
 
         // 更新选中行
         table.setRowSelectionInterval(targetRow, targetRow);
+        // Rebuild the persisted config directly from the current table rows so cost/bonds are not lost on reorder.
+        if (table.getModel() != null) {
+            saveTableConfigFromModel();
+            return;
+        }
         //更新到配置文件
         //第几行
         int row = table.getSelectedRow();
@@ -258,6 +276,10 @@ public class StockWindow {
 
 
     private static void editCellValue() {
+        // Persist edits from the table-model listener instead of the editor callback, because selection may already move.
+        if (table.getModel() != null) {
+            return;
+        }
         String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(table.getSelectedRow()), handler.codeColumnIndex));//FIX 移动列导致的BUG
         int row = table.getSelectedRow();
         int col = table.getSelectedColumn();
@@ -330,6 +352,196 @@ public class StockWindow {
         apply();
     }
 
+
+    private static void bindEditPersistenceListener() {
+        if (handler == null) {
+            return;
+        }
+        if (editPersistenceListener != null) {
+            handler.removeTableModelListener(editPersistenceListener);
+        }
+        editPersistenceListener = e -> {
+            if (e.getType() != TableModelEvent.UPDATE || e.getColumn() < 0) {
+                return;
+            }
+            for (int row = e.getFirstRow(); row <= e.getLastRow(); row++) {
+                persistEditedCell(row, e.getColumn());
+            }
+        };
+        handler.addTableModelListener(editPersistenceListener);
+    }
+
+    private static void persistEditedCell(int modelRow, int modelCol) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        if (modelRow < 0 || modelCol < 0 || modelRow >= model.getRowCount() || modelCol >= model.getColumnCount()) {
+            return;
+        }
+
+        String editColumnName = WindowUtils.remapPinYin(model.getColumnName(modelCol));
+        if (!Objects.equals(editColumnName, COST_COLUMN_NAME) && !Objects.equals(editColumnName, BONDS_COLUMN_NAME)) {
+            return;
+        }
+
+        String code = Objects.toString(model.getValueAt(modelRow, handler.codeColumnIndex), "");
+        if (StringUtils.isBlank(code)) {
+            return;
+        }
+
+        int costColumnIndex = findColumnIndex(COST_COLUMN_NAME);
+        int bondsColumnIndex = findColumnIndex(BONDS_COLUMN_NAME);
+        String costPrise = costColumnIndex >= 0 ? normalizeStockValue(Objects.toString(model.getValueAt(modelRow, costColumnIndex), "")) : "";
+        String bonds = bondsColumnIndex >= 0 ? normalizeStockValue(Objects.toString(model.getValueAt(modelRow, bondsColumnIndex), "")) : "";
+
+        String key = getKeyForName(NAME);
+        String storedValue = instance.getValue(key);
+        String[] split = StringUtils.isBlank(storedValue) ? new String[0] : storedValue.split(";");
+        StringBuilder codeString = new StringBuilder();
+        boolean updated = false;
+        for (String splitCode : split) {
+            if (StringUtils.isBlank(splitCode)) {
+                continue;
+            }
+            if (Objects.equals(extractStockCode(splitCode), code)) {
+                splitCode = mergeStockConfig(code, costPrise, bonds);
+                updated = true;
+            }
+            codeString.append(splitCode).append(";");
+        }
+        if (!updated) {
+            codeString.append(mergeStockConfig(code, costPrise, bonds)).append(";");
+        }
+        instance.setValue(key, codeString.toString());
+        refreshIncomeColumns(model, modelRow);
+        SwingUtilities.invokeLater(StockWindow::refresh);
+    }
+
+    private static int findColumnIndex(String columnName) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        for (int i = 0; i < model.getColumnCount(); i++) {
+            String modelColumnName = WindowUtils.remapPinYin(model.getColumnName(i));
+            if (Objects.equals(modelColumnName, columnName)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static void saveTableConfigFromModel() {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        int costColumnIndex = findColumnIndex(COST_COLUMN_NAME);
+        int bondsColumnIndex = findColumnIndex(BONDS_COLUMN_NAME);
+        StringBuilder codeString = new StringBuilder();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String code = Objects.toString(model.getValueAt(i, handler.codeColumnIndex), "");
+            if (StringUtils.isBlank(code)) {
+                continue;
+            }
+            String costPrise = costColumnIndex >= 0 ? normalizeStockValue(Objects.toString(model.getValueAt(i, costColumnIndex), "")) : "";
+            String bonds = bondsColumnIndex >= 0 ? normalizeStockValue(Objects.toString(model.getValueAt(i, bondsColumnIndex), "")) : "";
+            codeString.append(mergeStockConfig(code, costPrise, bonds)).append(";");
+        }
+        instance.setValue(getKeyForName(NAME), codeString.toString());
+    }
+
+    private static void refreshIncomeColumns(DefaultTableModel model, int modelRow) {
+        if (model == null || modelRow < 0 || modelRow >= model.getRowCount()) {
+            return;
+        }
+
+        int nowColumnIndex = findColumnIndex(NOW_COLUMN_NAME);
+        int costColumnIndex = findColumnIndex(COST_COLUMN_NAME);
+        int bondsColumnIndex = findColumnIndex(BONDS_COLUMN_NAME);
+        int incomePercentColumnIndex = findColumnIndex(INCOME_PERCENT_COLUMN_NAME);
+        int incomeColumnIndex = findColumnIndex(INCOME_COLUMN_NAME);
+        if (nowColumnIndex < 0 || costColumnIndex < 0 || bondsColumnIndex < 0 || incomePercentColumnIndex < 0 || incomeColumnIndex < 0) {
+            return;
+        }
+
+        String nowValue = normalizeStockValue(Objects.toString(model.getValueAt(modelRow, nowColumnIndex), ""));
+        String costPrise = normalizeStockValue(Objects.toString(model.getValueAt(modelRow, costColumnIndex), ""));
+        String bonds = normalizeStockValue(Objects.toString(model.getValueAt(modelRow, bondsColumnIndex), ""));
+        String incomePercent = "";
+        String income = "";
+
+        if (StringUtils.isNotBlank(nowValue) && StringUtils.isNotBlank(costPrise)) {
+            try {
+                BigDecimal now = new BigDecimal(nowValue);
+                BigDecimal costPriseDecimal = new BigDecimal(costPrise);
+                BigDecimal incomeDiff = now.subtract(costPriseDecimal);
+                if (costPriseDecimal.compareTo(BigDecimal.ZERO) <= 0) {
+                    incomePercent = "0.000%";
+                } else {
+                    incomePercent = incomeDiff.divide(costPriseDecimal, 5, RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.TEN)
+                            .multiply(BigDecimal.TEN)
+                            .setScale(3, RoundingMode.HALF_UP)
+                            .toPlainString() + "%";
+                }
+
+                if (StringUtils.isNotBlank(bonds)) {
+                    BigDecimal bondsDecimal = new BigDecimal(bonds);
+                    income = incomeDiff.multiply(bondsDecimal)
+                            .setScale(2, RoundingMode.HALF_UP)
+                            .toPlainString();
+                }
+            } catch (NumberFormatException ignore) {
+                incomePercent = "";
+                income = "";
+            }
+        }
+
+        model.setValueAt(incomePercent, modelRow, incomePercentColumnIndex);
+        model.setValueAt(income, modelRow, incomeColumnIndex);
+    }
+
+    private static void restartScheduledRefresh() {
+        if (handler == null) {
+            return;
+        }
+        List<String> codes = loadStocks();
+        if (CollectionUtils.isEmpty(codes)) {
+            stop();
+            return;
+        }
+        HashMap<String, Object> dataMap = new HashMap<>();
+        dataMap.put(HandlerJob.KEY_HANDLER, handler);
+        dataMap.put(HandlerJob.KEY_CODES, codes);
+        QuartzManager.getInstance(NAME).runJob(HandlerJob.class, ConfigManager.getInstance().getStockCronExpression(), dataMap);
+    }
+
+    private static void commitTableEdits() {
+        if (table == null || !table.isEditing()) {
+            return;
+        }
+        TableCellEditor cellEditor = table.getCellEditor();
+        if (cellEditor != null) {
+            cellEditor.stopCellEditing();
+        }
+        if (table.getModel() != null && table.getRowCount() > 0) {
+            saveTableConfigFromModel();
+        }
+    }
+
+    private static String extractStockCode(String stockConfig) {
+        return StringUtils.substringBefore(stockConfig, ",");
+    }
+
+    private static String mergeStockConfig(String code, String costPrise, String bonds) {
+        String normalizedCostPrise = normalizeStockValue(costPrise);
+        String normalizedBonds = normalizeStockValue(bonds);
+        if (StringUtils.isBlank(normalizedCostPrise) && StringUtils.isBlank(normalizedBonds)) {
+            return code;
+        }
+        return code + "," + normalizedCostPrise + "," + normalizedBonds;
+    }
+
+    private static String normalizeStockValue(String value) {
+        String normalizedValue = StringUtils.trimToEmpty(value);
+        if (Objects.equals(normalizedValue, "--")) {
+            return "";
+        }
+        return normalizedValue;
+    }
 
     public StockWindow() {
         // 切换接口
@@ -687,17 +899,20 @@ public class StockWindow {
 
     public static void apply() {
         if (handler != null) {
+            commitTableEdits();
             handler = factoryHandler();
             ConfigManager configManager = ConfigManager.getInstance();
             handler.setStriped(configManager.isTableStriped());
             handler.clearRow();
             handler.setupTable(loadStocks());
+            bindEditPersistenceListener();
             refresh();
         }
     }
 
     public static void refresh() {
         if (handler != null) {
+            commitTableEdits();
             ConfigManager configManager = ConfigManager.getInstance();
             handler.refreshColorful(configManager.isColorfulEnabled());
             List<String> codes = loadStocks();
@@ -786,10 +1001,12 @@ public class StockWindow {
         // 确保行索引有效
         if (row1 >= 0 && row1 < model.getRowCount() && row2 >= 0 && row2 < model.getRowCount()) {
             // 交换行数据
-            Vector<?> rowData1 = (Vector<?>) model.getDataVector().elementAt(row1);
-            Vector<?> rowData2 = (Vector<?>) model.getDataVector().elementAt(row2);
-            model.getDataVector().set(row1, rowData2);
-            model.getDataVector().set(row2, rowData1);
+            int modelRow1 = table.convertRowIndexToModel(row1);
+            int modelRow2 = table.convertRowIndexToModel(row2);
+            Vector<?> rowData1 = (Vector<?>) model.getDataVector().elementAt(modelRow1);
+            Vector<?> rowData2 = (Vector<?>) model.getDataVector().elementAt(modelRow2);
+            model.getDataVector().set(modelRow1, rowData2);
+            model.getDataVector().set(modelRow2, rowData1);
             // 通知模型数据已更改
             model.fireTableDataChanged();
             // 更新选中行
@@ -803,6 +1020,11 @@ public class StockWindow {
      * 更新配置文件
      */
     private void updateConfigFile() {
+        saveTableConfigFromModel();
+        // Drag reorder uses the current table snapshot as the source of truth.
+        if (table.getModel() != null) {
+            return;
+        }
         String key = getKeyForName(NAME);
         // 从表格中获取所有股票代码
         DefaultTableModel model = (DefaultTableModel) table.getModel();
