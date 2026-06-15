@@ -13,7 +13,8 @@ public class WindowUtils {
     public static final String FUND_TABLE_HEADER_VALUE = "编码,基金名称,估算涨跌,当日净值,估算净值,持仓成本价,持有份额,收益率,收益,更新时间";
     //股票表头
     public static final String STOCK_TABLE_HEADER_KEY = "stock_table_header_key2"; //移动表头时存储的key
-    public static final String STOCK_TABLE_HEADER_VALUE = "编码,股票名称,涨跌,涨跌幅,最高价,最低价,卖一,当前价,买一,成本价,持仓,收益率,收益,更新时间";
+    public static final String STOCK_TABLE_WIDTH_KEY = "stock_table_width_key"; //列宽存储的key
+    public static final String STOCK_TABLE_HEADER_VALUE = "编码,股票名称,涨跌,涨跌幅,最高价,最低价,卖一,当前价,买一,成本价,持仓,收益率,收益,今日收益,更新时间";
     //货币表头
     public static final String COIN_TABLE_HEADER_KEY = "coin_table_header_key2"; //移动表头时存储的key
     public static final String COIN_TABLE_HEADER_VALUE = "编码,当前价,涨跌,涨跌幅,最高价,最低价,更新时间";
@@ -39,6 +40,7 @@ public class WindowUtils {
         remapPinYinMap.put(PinYinUtils.toPinYin("持仓"), "持仓");
         remapPinYinMap.put(PinYinUtils.toPinYin("收益率"), "收益率");
         remapPinYinMap.put(PinYinUtils.toPinYin("收益"), "收益");
+        remapPinYinMap.put(PinYinUtils.toPinYin("今日收益"), "今日收益");
 
         remapPinYinMap.put(PinYinUtils.toPinYin("持仓成本价"), "持仓成本价");
         remapPinYinMap.put(PinYinUtils.toPinYin("持有份额"), "持有份额");
@@ -67,5 +69,41 @@ public class WindowUtils {
         return remapPinYinMap.getOrDefault(pinyin, pinyin);
     }
 
+    /**
+     * 保存列名顺序和列宽到 PropertiesComponent
+     */
+    public static void saveColumnWidths(javax.swing.JTable table, String headerKey, String widthKey) {
+        com.intellij.ide.util.PropertiesComponent instance = com.intellij.ide.util.PropertiesComponent.getInstance();
+        StringBuilder widthSb = new StringBuilder();
+        StringBuilder headerSb = new StringBuilder();
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            headerSb.append(table.getColumnName(i)).append(",");
+            widthSb.append(table.getColumnModel().getColumn(i).getWidth()).append(",");
+        }
+        if (headerSb.length() > 0) {
+            instance.setValue(headerKey, headerSb.substring(0, headerSb.length() - 1));
+            instance.setValue(widthKey, widthSb.substring(0, widthSb.length() - 1));
+        }
+    }
 
+    /**
+     * 从 PropertiesComponent 恢复列宽
+     */
+    public static void restoreColumnWidths(javax.swing.JTable table, String widthKey) {
+        com.intellij.ide.util.PropertiesComponent instance = com.intellij.ide.util.PropertiesComponent.getInstance();
+        String widthStr = instance.getValue(widthKey);
+        if (org.apache.commons.lang3.StringUtils.isBlank(widthStr)) {
+            return;
+        }
+        String[] widths = widthStr.split(",");
+        for (int i = 0; i < Math.min(widths.length, table.getColumnCount()); i++) {
+            try {
+                int width = Integer.parseInt(widths[i]);
+                if (width > 0) {
+                    table.getColumnModel().getColumn(i).setPreferredWidth(width);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+    }
 }

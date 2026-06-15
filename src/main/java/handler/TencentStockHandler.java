@@ -91,6 +91,8 @@ public class TencentStockHandler extends StockRefreshHandler {
 
             BigDecimal now = new BigDecimal(values[3]);
             String costPriceStr = bean.getCostPrise();
+            String bondStr = bean.getBonds();
+
             if (StringUtils.isNotBlank(costPriceStr)) {
                 try {
                     BigDecimal costPriceDec = new BigDecimal(costPriceStr);
@@ -105,13 +107,25 @@ public class TencentStockHandler extends StockRefreshHandler {
                         bean.setIncomePercent(incomePercentDec.toString());
                     }
 
-                    String bondStr = bean.getBonds();
                     if (StringUtils.isNotBlank(bondStr)) {
                         BigDecimal bondDec = new BigDecimal(bondStr);
                         BigDecimal incomeDec = incomeDiff.multiply(bondDec)
                                 .setScale(2, RoundingMode.HALF_UP);
                         bean.setIncome(incomeDec.toString());
                     }
+                } catch (NumberFormatException ignore) {
+                }
+            }
+
+            // 计算今日收益 = 涨跌额 * 持仓
+            String changeStr = bean.getChange();
+            if (StringUtils.isNotBlank(changeStr) && StringUtils.isNotBlank(bondStr)) {
+                try {
+                    BigDecimal changeDec = new BigDecimal(changeStr);
+                    BigDecimal bondDec = new BigDecimal(bondStr);
+                    BigDecimal dailyIncomeDec = changeDec.multiply(bondDec)
+                            .setScale(2, RoundingMode.HALF_UP);
+                    bean.setDailyIncome(dailyIncomeDec.toString());
                 } catch (NumberFormatException ignore) {
                 }
             }
