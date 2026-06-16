@@ -110,7 +110,7 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
             Double v2 = NumberUtils.toDouble(StringUtils.remove((String) o2, '%'));
             return v1.compareTo(v2);
         };
-        Arrays.stream("当前价,涨跌,涨跌幅,最高价,最低价".split(",")).map(name -> WindowUtils.getColumnIndexByName(columnNames, name)).filter(index -> index >= 0).forEach(index -> rowSorter.setComparator(index, doubleComparator));
+        Arrays.stream("当前价,涨跌,涨跌幅,最高价,最低价,今日收益".split(",")).map(name -> WindowUtils.getColumnIndexByName(columnNames, name)).filter(index -> index >= 0).forEach(index -> rowSorter.setComparator(index, doubleComparator));
         table.setRowSorter(rowSorter);
         columnColors(colorful);
     }
@@ -176,12 +176,20 @@ public abstract class StockRefreshHandler extends DefaultTableModel {
 
         int columnIndex3 = WindowUtils.getColumnIndexByName(columnNames, "收益率");
         int columnIndex4 = WindowUtils.getColumnIndexByName(columnNames, "收益");
+        int columnIndex5 = WindowUtils.getColumnIndexByName(columnNames, "今日收益");
 
         table.getColumn(getColumnName(columnIndex1)).setCellRenderer(cellRenderer);
         table.getColumn(getColumnName(columnIndex2)).setCellRenderer(cellRenderer);
 
-        table.getColumn(getColumnName(columnIndex3)).setCellRenderer(cellRenderer);
-        table.getColumn(getColumnName(columnIndex4)).setCellRenderer(cellRenderer);
+        if (columnIndex3 >= 0) {
+            table.getColumn(getColumnName(columnIndex3)).setCellRenderer(cellRenderer);
+        }
+        if (columnIndex4 >= 0) {
+            table.getColumn(getColumnName(columnIndex4)).setCellRenderer(cellRenderer);
+        }
+        if (columnIndex5 >= 0) {
+            table.getColumn(getColumnName(columnIndex5)).setCellRenderer(cellRenderer);
+        }
     }
 
     protected void updateData(StockBean bean) {

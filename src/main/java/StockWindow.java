@@ -30,6 +30,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -61,6 +64,7 @@ public class StockWindow {
     static JBTable table;
     static JLabel refreshTimeLabel;
     static TableModelListener editPersistenceListener;
+    private static volatile boolean tableInitialized = false;
 
 
     private JDialog searchDialog; // 搜索弹窗
@@ -80,20 +84,29 @@ public class StockWindow {
         refreshTimeLabel.setToolTipText("最后刷新时间");
         refreshTimeLabel.setBorder(new EmptyBorder(0, 0, 0, 5));
         table = new JBTable();
-        //记录列名的变化
+        //记录列名和列宽的变化
         table.getTableHeader().addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                StringBuilder tableHeadChange = new StringBuilder();
-                for (int i = 0; i < table.getColumnCount(); i++) {
-                    tableHeadChange.append(table.getColumnName(i)).append(",");
-                }
-                PropertiesComponent instance = PropertiesComponent.getInstance();
-                //将列名的修改放入环境中 key:stock_table_header_key
-                instance.setValue(WindowUtils.STOCK_TABLE_HEADER_KEY, tableHeadChange.substring(0, tableHeadChange.length() > 0 ? tableHeadChange.length() - 1 : 0));
-
+                WindowUtils.saveColumnWidths(table, WindowUtils.STOCK_TABLE_HEADER_KEY, WindowUtils.STOCK_TABLE_WIDTH_KEY);
             }
-
+        });
+        // 列宽变化时保存（初始化完成前跳过，避免默认值覆盖用户保存的数据）
+        table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+            @Override
+            public void columnAdded(TableColumnModelEvent e) {}
+            @Override
+            public void columnRemoved(TableColumnModelEvent e) {}
+            @Override
+            public void columnMoved(TableColumnModelEvent e) {}
+            @Override
+            public void columnMarginChanged(ChangeEvent e) {
+                if (tableInitialized) {
+                    WindowUtils.saveColumnWidths(table, WindowUtils.STOCK_TABLE_HEADER_KEY, WindowUtils.STOCK_TABLE_WIDTH_KEY);
+                }
+            }
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent e) {}
         });
 
         table.addMouseListener(new MouseAdapter() {
@@ -573,12 +586,17 @@ public class StockWindow {
 
         // 非主要tab，需要创建，创建时立即应用数据
         apply();
+        // 恢复上次保存的列宽
+        WindowUtils.restoreColumnWidths(table, WindowUtils.STOCK_TABLE_WIDTH_KEY);
 
         // 绑定全局快捷键 F7
         bindGlobalKeyListener();
 
         // 添加表格行拖动功能
         implementRowDragAndDrop();
+
+        // 初始化完成，之后列宽/顺序的变化才会被保存
+        tableInitialized = true;
     }
 
     // 初始化搜索弹窗

@@ -30,6 +30,7 @@ public class StockBean {
     private String bonds;//持仓
     private String incomePercent;//收益率
     private String income;//收益
+    private String dailyIncome;//今日收益
 
     //配置code同时配置成本价和成本值
     public StockBean(String code) {
@@ -124,6 +125,8 @@ public class StockBean {
                 return StringUtils.isBlank(this.getIncomePercent()) ? "" : this.getIncomePercent() + "%";
             case "收益":
                 return StringUtils.defaultString(this.getIncome());
+            case "今日收益":
+                return StringUtils.defaultString(this.getDailyIncome());
             case "更新时间":
                 String timeStr = "--";
                 if (this.getTime() != null) {
