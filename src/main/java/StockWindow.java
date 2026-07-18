@@ -16,7 +16,7 @@ import com.intellij.util.ui.UIUtil;
 import handler.SinaStockHandler;
 import handler.StockRefreshHandler;
 import handler.TencentStockHandler;
-import org.apache.commons.collections.CollectionUtils;
+import cn.hutool.core.collection.CollectionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -512,7 +512,7 @@ public class StockWindow {
             return;
         }
         List<String> codes = loadStocks();
-        if (CollectionUtils.isEmpty(codes)) {
+        if (CollectionUtil.isEmpty(codes)) {
             stop();
             return;
         }
@@ -934,7 +934,7 @@ public class StockWindow {
             ConfigManager configManager = ConfigManager.getInstance();
             handler.refreshColorful(configManager.isColorfulEnabled());
             List<String> codes = loadStocks();
-            if (CollectionUtils.isEmpty(codes)) {
+            if (CollectionUtil.isEmpty(codes)) {
                 stop(); //如果没有数据则不需要启动时钟任务浪费资源
             } else {
                 handler.handle(codes);

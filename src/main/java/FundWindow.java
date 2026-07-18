@@ -16,7 +16,7 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.table.JBTable;
 import handler.TianTianFundHandler;
-import org.apache.commons.collections.CollectionUtils;
+import cn.hutool.core.collection.CollectionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -204,7 +204,7 @@ public class FundWindow implements ToolWindowFactory {
             boolean colorful = configManager.isColorfulEnabled();
             fundRefreshHandler.refreshColorful(colorful);
             List<String> codes = loadFunds();
-            if (CollectionUtils.isEmpty(codes)) {
+            if (CollectionUtil.isEmpty(codes)) {
                 stop(); //如果没有数据则不需要启动时钟任务浪费资源
             } else {
                 fundRefreshHandler.handle(codes);

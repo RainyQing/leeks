@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.huage2580'
-version '2.9.8'
+version '2.9.9'
 
 java {
     sourceCompatibility = '17'
@@ -34,14 +34,14 @@ dependencies {
     implementation group: 'cn.hutool', name: 'hutool-all', version: '5.8.13'
     //fastjson
     implementation group: 'com.alibaba', name: 'fastjson', version: '2.0.38'
-    compileOnly(group: 'org.projectlombok', name: 'lombok', version: '1.18.30')
-    annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: '1.18.30')
+    compileOnly(group: 'org.projectlombok', name: 'lombok', version: '1.18.40')
+    annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: '1.18.40')
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
 //    version '2023.3.1'
-    localPath.set('C:\\Users\\kmwei\\dev\\tool\\idea')
+    localPath.set('D:\\dev\\tool\\idea')
 //    localPath.set('E:\\tool\\idea')7
     intellij.setUpdateSinceUntilBuild(true)
     intellij.setSameSinceUntilBuild(false)
@@ -74,12 +74,15 @@ patchPluginXml {
         v2.9.6 修复插件兼容IDEA 2026.1  from [RainyQing](https://github.com/RainyQing)
         v2.9.7 修复超级藏模式失效问题  from [RainyQing](https://github.com/RainyQing)
         v2.9.8 1. 编辑第二条成本价和持仓会清空第一条成本价和持仓问题 2. 修复刷新按钮会把把成本价/持仓冲掉问题 3. 修复拖动和上下移动丢会丢失成本价和持仓数据问题  from [RainyQing](https://github.com/RainyQing)
+        v2.9.9 1. 修复插件兼容IDEA 2026.2 2. 使用hutool替换commons-collections(IDEA平台已移除该依赖) 3. 升级lombok至1.18.40  from [RainyQing](https://github.com/RainyQing)
       """)
-    sinceBuild.set('261')  //最低版本限制
+    sinceBuild.set('262')  //最低版本限制
     untilBuild.set(null) //最高版本限制
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
+    options.fork = true
+    options.forkOptions.executable = "D:/dev/tool/idea/jbr/bin/javac.exe"
 }
 buildSearchableOptions.enabled = false

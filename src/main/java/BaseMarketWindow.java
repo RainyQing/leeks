@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
-import org.apache.commons.collections.CollectionUtils;
+import cn.hutool.core.collection.CollectionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import quartz.HandlerJob;
@@ -104,7 +104,7 @@ public abstract class BaseMarketWindow {
         if (handler != null) {
             handler.refreshColorful(configManager.isColorfulEnabled());
             List<String> codes = loadCodes();
-            if (CollectionUtils.isEmpty(codes)) {
+            if (CollectionUtil.isEmpty(codes)) {
                 stop(); // 如果没有数据则不需要启动时钟任务浪费资源
             } else {
                 handler.handle(codes);
