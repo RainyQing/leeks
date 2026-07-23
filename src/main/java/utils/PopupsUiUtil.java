@@ -145,6 +145,7 @@ public class PopupsUiUtil {
     }
 
     public enum FundShowType {
+        delete("删除"),
         /**
          * 净值估算图
          */

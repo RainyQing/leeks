@@ -46,6 +46,8 @@ public class FundBean {
             this.fundCode = fundCode;
         }
         this.fundName = "--";
+        this.incomePercent = "--";
+        this.income = "--";
     }
 
     public static void loadFund(FundBean fund, Map<String, String[]> codeMap) {
@@ -98,7 +100,7 @@ public class FundBean {
             case "持有份额":
                 return this.getBonds();
             case "收益率":
-                return this.getCostPrise() != null ? this.getIncomePercent() + "%" : this.getIncomePercent();
+                return this.getIncomePercent() + "%";
             case "收益":
                 return this.getIncome();
             default:

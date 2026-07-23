@@ -1,8 +1,8 @@
 package handler;
 
 import bean.FundBean;
-import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import utils.HttpClientPool;
 import utils.LogUtil;
 
@@ -18,7 +18,6 @@ import java.util.Map;
 
 public class TianTianFundHandler extends FundRefreshHandler {
     public final static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-    private static Gson gson = new Gson();
 
     private JLabel refreshTimeLabel;
 
@@ -62,46 +61,68 @@ public class TianTianFundHandler extends FundRefreshHandler {
         for (String code : codeList) {
             new Thread(() -> {
                 try {
-                    String result = HttpClientPool.getHttpClient().get("https://fundgz.1234567.com.cn/js/" + code + ".js?rt=" + System.currentTimeMillis());
-                    String json = result.substring(8, result.length() - 2);
-                    if (!json.isEmpty()) {
-                        FundBean bean = gson.fromJson(json, FundBean.class);
-                        FundBean.loadFund(bean, codeMap);
+                    String result = HttpClientPool.getHttpClient().get(
+                            "https://hq.sinajs.cn/list=fu_" + code, "GB18030");
+                    String prefix = "var hq_str_fu_" + code + "=\"";
+                    int start = result.indexOf(prefix);
+                    if (start < 0) {
+                        LogUtil.info("Fund编码:[" + code + "]无法获取数据");
+                        return;
+                    }
+                    int end = result.indexOf("\";", start + prefix.length());
+                    if (end < 0) {
+                        LogUtil.info("Fund编码:[" + code + "]无法获取数据");
+                        return;
+                    }
+                    String dataStr = result.substring(start + prefix.length(), end);
+                    String[] values = dataStr.split(",");
+                    if (values.length < 8 || StringUtils.isAnyBlank(values[0], values[2], values[3], values[6], values[7])) {
+                        LogUtil.info("Fund编码:[" + code + "]返回数据不完整");
+                        return;
+                    }
+                    FundBean bean = new FundBean(code);
+                    bean.setFundCode(code);
+                    bean.setFundName(values[0]);
+                    bean.setGsz(values[2]);
+                    bean.setDwjz(values[3]);
+                    bean.setGszzl(values[6]);
+                    bean.setJzrq(values[7]);
+                    bean.setGztime(values[7] + " " + values[1]);
+                    FundBean.loadFund(bean, codeMap);
 
-                        BigDecimal now = new BigDecimal(bean.getGsz());
-                        String costPriceStr = bean.getCostPrise();
-                        if (StringUtils.isNotEmpty(costPriceStr)) {
-                            BigDecimal costPriceDec = new BigDecimal(costPriceStr);
-                            BigDecimal incomeDiff = now.add(costPriceDec.negate());
-                            if (costPriceDec.compareTo(BigDecimal.ZERO) <= 0) {
-                                bean.setIncomePercent("0");
-                            } else {
-                                BigDecimal incomePercentDec = incomeDiff.divide(costPriceDec, 8, RoundingMode.HALF_UP)
-                                        .multiply(BigDecimal.TEN)
-                                        .multiply(BigDecimal.TEN)
-                                        .setScale(3, RoundingMode.HALF_UP);
-                                bean.setIncomePercent(incomePercentDec.toString());
-                            }
-
-                            String bondStr = bean.getBonds();
-                            if (StringUtils.isNotEmpty(bondStr)) {
-                                BigDecimal bondDec = new BigDecimal(bondStr);
-                                BigDecimal incomeDec = incomeDiff.multiply(bondDec)
-                                        .setScale(2, RoundingMode.HALF_UP);
-                                bean.setIncome(incomeDec.toString());
-                            }
+                    BigDecimal now = new BigDecimal(bean.getGsz());
+                    String costPriceStr = bean.getCostPrise();
+                    if (NumberUtils.isParsable(costPriceStr)) {
+                        BigDecimal costPriceDec = new BigDecimal(costPriceStr);
+                        BigDecimal incomeDiff = now.add(costPriceDec.negate());
+                        if (costPriceDec.compareTo(BigDecimal.ZERO) <= 0) {
+                            bean.setIncomePercent("0");
+                        } else {
+                            BigDecimal incomePercentDec = incomeDiff.divide(costPriceDec, 8, RoundingMode.HALF_UP)
+                                    .multiply(BigDecimal.TEN)
+                                    .multiply(BigDecimal.TEN)
+                                    .setScale(3, RoundingMode.HALF_UP);
+                            bean.setIncomePercent(incomePercentDec.toString());
                         }
 
-                        updateData(bean);
-                    } else {
-                        LogUtil.info("Fund编码:[" + code + "]无法获取数据");
+                        String bondStr = bean.getBonds();
+                        if (NumberUtils.isParsable(bondStr)) {
+                            BigDecimal bondDec = new BigDecimal(bondStr);
+                            BigDecimal incomeDec = incomeDiff.multiply(bondDec)
+                                    .setScale(2, RoundingMode.HALF_UP);
+                            bean.setIncome(incomeDec.toString());
+                        }
                     }
+
+                    SwingUtilities.invokeLater(() -> {
+                        updateData(bean);
+                        updateUI();
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }).start();
         }
-        updateUI();
     }
 
     public void updateUI() {

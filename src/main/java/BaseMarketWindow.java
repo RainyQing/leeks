@@ -1,5 +1,6 @@
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.ui.AnActionButton;
 import com.intellij.ui.ToolbarDecorator;
@@ -74,14 +75,14 @@ public abstract class BaseMarketWindow {
         };
 
         ToolbarDecorator toolbarDecorator = ToolbarDecorator.createDecorator(table)
-                .addExtraAction(new AnActionButton("持续刷新当前表格数据", AllIcons.Actions.Refresh) {
+                .addExtraAction((AnAction) new AnActionButton("持续刷新当前表格数据", AllIcons.Actions.Refresh) {
                     @Override
                     public void actionPerformed(@NotNull AnActionEvent e) {
                         refresh();
                         refreshAction.setEnabled(true);
                     }
                 })
-                .addExtraAction(refreshAction)
+                .addExtraAction((AnAction) refreshAction)
                 .setToolbarPosition(ActionToolbarPosition.TOP);
 
         JPanel toolPanel = toolbarDecorator.createPanel();

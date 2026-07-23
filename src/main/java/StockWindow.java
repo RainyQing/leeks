@@ -1,6 +1,7 @@
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.ActionToolbarPosition;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupStep;
@@ -201,6 +202,10 @@ public class StockWindow {
             });
         }
 
+        InputMap focusedInputMap = table.getInputMap(JComponent.WHEN_FOCUSED);
+        focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_DOWN_MASK), "moveUp");
+        // JTable already binds Ctrl+Down while focused, so override it at the focused level.
+        focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_DOWN_MASK), "moveDown");
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
                 .put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.ALT_DOWN_MASK), "moveUp");
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
@@ -209,6 +214,7 @@ public class StockWindow {
         table.getActionMap().put("moveUp", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                stopTableEditing();
                 moveRow(-1); // 向上移动
             }
         });
@@ -216,6 +222,7 @@ public class StockWindow {
         table.getActionMap().put("moveDown", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                stopTableEditing();
                 moveRow(1); // 向下移动
                 //并配置到配置文件
             }
@@ -571,13 +578,13 @@ public class StockWindow {
             }
         };
 
-        ToolbarDecorator toolbarDecorator = ToolbarDecorator.createDecorator(table).addExtraAction(new AnActionButton("持续刷新当前表格数据", AllIcons.Actions.Refresh) {
+        ToolbarDecorator toolbarDecorator = ToolbarDecorator.createDecorator(table).addExtraAction((AnAction) new AnActionButton("持续刷新当前表格数据", AllIcons.Actions.Refresh) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 refresh();
                 refreshAction.setEnabled(true);
             }
-        }).addExtraAction(refreshAction).setToolbarPosition(ActionToolbarPosition.TOP);
+        }).addExtraAction((AnAction) refreshAction).setToolbarPosition(ActionToolbarPosition.TOP);
 
         JPanel toolPanel = toolbarDecorator.createPanel();
         toolbarDecorator.getActionsPanel().add(refreshTimeLabel, BorderLayout.EAST);
@@ -779,9 +786,11 @@ public class StockWindow {
     private void handleSelection() {
         int selectedIndex = resultList.getSelectedIndex();
         String selectedValue = listModel.getElementAt(selectedIndex).toString();
-
-
         String key = getKeyForResult(selectedValue);
+        String code = getCodeForResult(selectedValue);
+        if (StringUtils.isBlank(key) || StringUtils.isBlank(code)) {
+            return;
+        }
 
         if (selectedValue.endsWith("-已添加")) {
             // 移除 "-已添加" 并从 PropertiesComponent 中移除数据
@@ -792,35 +801,41 @@ public class StockWindow {
             // 从 PropertiesComponent 中移除数据
             String instanceCode = instance.getValue(key);
             if (instanceCode != null) {
-                String[] split = originalValue.split("-");
-                if (split.length == 3) {
-                    String[] instanceSplit = instanceCode.split(";");
-                    StringBuilder codeString = new StringBuilder();
-                    for (String splitCode : instanceSplit) {
-                        if (!splitCode.contains(split[1])) { // 关键：只添加不包含目标字符串且不为空的项
-                            codeString.append(splitCode).append(";");
-                        }
+                StringBuilder codeString = new StringBuilder();
+                for (String storedCode : instanceCode.split(";")) {
+                    if (!StringUtils.isBlank(storedCode) && !code.equals(getStoredCode(key, storedCode))) {
+                        codeString.append(storedCode.trim()).append(";");
                     }
-                    instance.setValue(key, codeString.toString());
                 }
+                instance.setValue(key, codeString.toString());
             }
         } else {
             // 添加 "-已添加" 并将数据添加到 PropertiesComponent
             listModel.setElementAt(selectedValue + "-已添加", selectedIndex);
             resultList.repaint();
 
-            String[] split = selectedValue.split("-");
-            if (split.length == 3) {
-                String valueToAdd = split[1] + ";";
-                String storedValue = instance.getValue(key);
-                if (storedValue == null) {
-                    storedValue = "";
-                }
-                storedValue += valueToAdd;
-                instance.setValue(key, storedValue);
+            String storedValue = StringUtils.defaultString(instance.getValue(key));
+            if (!containsStoredCode(key, storedValue, code)) {
+                instance.setValue(key, storedValue + code + ";");
             }
         }
-        apply();
+        refreshWindowForResult(selectedValue);
+    }
+
+    private static void stopTableEditing() {
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
+        }
+    }
+
+    private void refreshWindowForResult(String result) {
+        if (result.startsWith("基金")) {
+            FundWindow.apply();
+        } else if (result.startsWith("债券")) {
+            CoinWindow.apply();
+        } else {
+            apply();
+        }
     }
 
     private String getKeyForResult(String result) {
@@ -853,13 +868,46 @@ public class StockWindow {
         for (String result : results) {
             String key = getKeyForResult(result);
             String storedValue = instance.getValue(key);
-            if (storedValue != null) {
-                if (result.split("-").length > 1 && storedValue.contains(result.split("-")[1])) {
-                    result += "-已添加"; // 如果存在，则添加后缀
-                }
+            String code = getCodeForResult(result);
+            if (StringUtils.isNotBlank(code) && containsStoredCode(key, storedValue, code)) {
+                result += "-已添加";
             }
             listModel.addElement(result);
         }
+    }
+
+    private String getCodeForResult(String result) {
+        String displayValue = StringUtils.removeEnd(result, "-已添加");
+        String[] parts = displayValue.split("-", 3);
+        if (parts.length != 3) {
+            return "";
+        }
+        return "基金".equals(parts[0]) ? normalizeFundCode(parts[1]) : parts[1];
+    }
+
+    private boolean containsStoredCode(String key, String storedValue, String code) {
+        if (StringUtils.isBlank(key) || StringUtils.isBlank(storedValue)) {
+            return false;
+        }
+        for (String storedCode : storedValue.split(";")) {
+            if (code.equals(getStoredCode(key, storedCode))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getStoredCode(String key, String storedValue) {
+        String value = storedValue.trim();
+        return ConfigKeys.KEY_FUNDS.equals(key) ? normalizeFundCode(StringUtils.substringBefore(value, ",")) : value;
+    }
+
+    private String normalizeFundCode(String code) {
+        String normalizedCode = code.trim();
+        if (normalizedCode.matches("\\D+\\d{6}")) {
+            return normalizedCode.substring(normalizedCode.length() - 6);
+        }
+        return normalizedCode;
     }
 
     // 全局快捷键监听
@@ -875,11 +923,20 @@ public class StockWindow {
                 }
                 return true; // 消费事件
             }
+            if (e.getID() == KeyEvent.KEY_PRESSED
+                    && e.getKeyCode() == KeyEvent.VK_DOWN
+                    && e.isControlDown()
+                    && isFocusInsideTable()) {
+                stopTableEditing();
+                moveRow(1);
+                return true;
+            }
             //如果按了delete键 , 删除当前行
-            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_DELETE) {
-                String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(table.getSelectedRow()), handler.codeColumnIndex));//FIX 移动列导致
+            if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_DELETE && isFocusInsideTable()) {
                 int selectedRow = table.getSelectedRow();
                 if (selectedRow != -1) {
+                    stopTableEditing();
+                    String code = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(selectedRow), handler.codeColumnIndex));//FIX 移动列导致
                     String key = getKeyForName(NAME);
                     // 从 PropertiesComponent 中移除数据
                     String storedValue = instance.getValue(key);
@@ -895,9 +952,15 @@ public class StockWindow {
                     }
                     apply();
                 }
+                return true;
             }
             return false;
         });
+    }
+
+    private static boolean isFocusInsideTable() {
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        return focusOwner != null && SwingUtilities.isDescendingFrom(focusOwner, table);
     }
 
 

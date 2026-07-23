@@ -82,11 +82,11 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
         }
         TableRowSorter<DefaultTableModel> rowSorter = new TableRowSorter<>(this);
         Comparator<Object> doubleComparator = (o1, o2) -> {
-            Double v1 = NumberUtils.toDouble(StringUtils.remove((String) o1, '%'));
-            Double v2 = NumberUtils.toDouble(StringUtils.remove((String) o2, '%'));
+            Double v1 = NumberUtils.toDouble(StringUtils.remove(Objects.toString(o1), '%'));
+            Double v2 = NumberUtils.toDouble(StringUtils.remove(Objects.toString(o2), '%'));
             return v1.compareTo(v2);
         };
-        Arrays.stream("估算净值,估算涨跌".split(",")).map(name -> WindowUtils.getColumnIndexByName(columnNames, name))
+        Arrays.stream("估算净值,估算涨跌,收益率,收益".split(",")).map(name -> WindowUtils.getColumnIndexByName(columnNames, name))
                 .filter(index -> index >= 0).forEach(index -> rowSorter.setComparator(index, doubleComparator));
         table.setRowSorter(rowSorter);
         columnColors(colorful);
@@ -119,8 +119,22 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
      * @param code
      */
     public void setupTable(List<String> code) {
+        Set<String> configuredCodes = new LinkedHashSet<>();
         for (String s : code) {
-            updateData(new FundBean(s));
+            configuredCodes.add(StringUtils.substringBefore(s, ",").trim());
+        }
+        // Keep the last successful quote while Apply triggers a new network request.
+        for (int row = getRowCount() - 1; row >= 0; row--) {
+            String fundCode = Objects.toString(getValueAt(row, codeColumnIndex), "");
+            if (!configuredCodes.contains(fundCode)) {
+                removeRow(row);
+            }
+        }
+        for (String s : code) {
+            String fundCode = StringUtils.substringBefore(s, ",").trim();
+            if (findRowIndex(codeColumnIndex, fundCode) < 0) {
+                updateData(new FundBean(s));
+            }
         }
     }
 
@@ -187,9 +201,18 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
         // 获取行
         int index = findRowIndex(codeColumnIndex, bean.getFundCode());
         if (index >= 0) {
+            preserveEditedValues(index, convertData);
             updateRow(index, convertData);
         } else {
             addRow(convertData);
+        }
+    }
+
+    private void preserveEditedValues(int rowIndex, Vector<Object> rowData) {
+        for (int columnIndex = 0; columnIndex < columnNames.length; columnIndex++) {
+            if (isCellEditable(rowIndex, columnIndex)) {
+                rowData.set(columnIndex, getValueAt(rowIndex, columnIndex));
+            }
         }
     }
 
@@ -249,6 +272,7 @@ public abstract class FundRefreshHandler extends DefaultTableModel {
 
     @Override
     public boolean isCellEditable(int row, int column) {
-        return false;
+        String columnName = columnNames[column];
+        return "持仓成本价".equals(columnName) || "持有份额".equals(columnName);
     }
 }

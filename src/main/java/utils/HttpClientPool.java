@@ -14,6 +14,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
@@ -63,22 +64,27 @@ public class HttpClientPool {
 
     public String get(String url) throws Exception {
         HttpGet httpGet = new HttpGet(url);
-        return getResponseContent(url,httpGet);
+        return getResponseContent(url, httpGet, StandardCharsets.UTF_8);
+    }
+
+    public String get(String url, String charsetName) throws Exception {
+        HttpGet httpGet = new HttpGet(url);
+        return getResponseContent(url, httpGet, Charset.forName(charsetName));
     }
 
     public String post(String url) throws Exception {
         HttpPost httpPost = new HttpPost(url);
-        return getResponseContent(url, httpPost);
+        return getResponseContent(url, httpPost, StandardCharsets.UTF_8);
     }
 
-    private String getResponseContent(String url, HttpRequestBase request) throws Exception {
+    private String getResponseContent(String url, HttpRequestBase request, Charset charset) throws Exception {
         HttpResponse response = null;
         try {
             if (url.contains("hq.sinajs.cn")) {
                 request.setHeader("Referer", "https://finance.sina.com.cn");
             }
             response = httpClient.execute(request);
-            return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+            return EntityUtils.toString(response.getEntity(), charset);
         } catch (Exception e) {
             throw new Exception("got an error from HTTP for url : " + URLDecoder.decode(url, "UTF-8"),e);
         } finally {

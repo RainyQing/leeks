@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.huage2580'
-version '2.9.9'
+version '3.0.0'
 
 java {
     sourceCompatibility = '17'
@@ -17,7 +17,6 @@ repositories {
     maven { url 'https://maven.aliyun.com/repository/public' }
     maven { url 'https://maven.aliyun.com/repository/google' }
 
-    jcenter()
     maven { url 'https://jitpack.io' } // 添加 JitPack 仓库
 
 }
@@ -75,6 +74,7 @@ patchPluginXml {
         v2.9.7 修复超级藏模式失效问题  from [RainyQing](https://github.com/RainyQing)
         v2.9.8 1. 编辑第二条成本价和持仓会清空第一条成本价和持仓问题 2. 修复刷新按钮会把把成本价/持仓冲掉问题 3. 修复拖动和上下移动丢会丢失成本价和持仓数据问题  from [RainyQing](https://github.com/RainyQing)
         v2.9.9 1. 修复插件兼容IDEA 2026.2 2. 使用hutool替换commons-collections(IDEA平台已移除该依赖) 3. 升级lombok至1.18.40  from [RainyQing](https://github.com/RainyQing)
+        v3.0.0 1. 修复股票和基金表格中 Ctrl+下快捷键被 IDEA 拦截的问题，可向下调整选中项顺序 2. 基金支持编辑持仓成本价和持有份额并保存，支持删除、拖动及快捷键调整顺序 3. 修复基金搜索添加和删除时的代码匹配问题 4. 修复插件兼容 IDEA 2026.2，并升级构建依赖  from [RainyQing](https://github.com/RainyQing)
       """)
     sinceBuild.set('262')  //最低版本限制
     untilBuild.set(null) //最高版本限制
@@ -82,6 +82,7 @@ patchPluginXml {
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
+    options.release = 17
     options.fork = true
     options.forkOptions.executable = "D:/dev/tool/idea/jbr/bin/javac.exe"
 }
