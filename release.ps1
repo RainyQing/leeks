@@ -86,8 +86,12 @@ if (-not $DryRun) {
 # 8. 准备 gh：优先使用已登录的 gh，否则复用 git 凭据管理器中的 token
 $gh = (Get-Command gh -ErrorAction SilentlyContinue).Source
 if (-not $gh) { $gh = "C:\Program Files\GitHub CLI\gh.exe" }
+$previousErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
 & $gh auth status 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) {
+$ghLoggedIn = $LASTEXITCODE -eq 0
+$ErrorActionPreference = $previousErrorActionPreference
+if (-not $ghLoggedIn) {
     $credOut = "protocol=https`nhost=github.com`n`n" | git credential fill
     $env:GH_TOKEN = ($credOut | Where-Object { $_ -like 'password=*' }) -replace '^password=',''
 }
